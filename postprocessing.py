@@ -121,3 +121,41 @@ def _plot_energy_history(energy):
     matplotlib.pyplot.close()
 
     return
+
+# we can now plot domains
+def plot_domain(domain, title='Domain', filename='fig_domain.jpg'):
+    """
+    NODE_INTERIOR = -1  # nodes located in the interior
+    NODE_COMPLEMENTARY = -2  # nodes located in the complement of (interior + frontier)
+    NODE_DIRICHLET = 1  # nodes with dirichlet boundary condition
+    NODE_NEUMANN = 2  # nodes with neumann boundary condition
+    NODE_ROBIN = 3  # nodes with robin boundary condition
+    """
+
+    domain_array = numpy.array(domain)
+
+    interior_nodes = numpy.argwhere(domain_array==_env.NODE_INTERIOR)
+    complementary_nodes = numpy.argwhere(domain_array==_env.NODE_COMPLEMENTARY)
+    dirichlet_nodes = numpy.argwhere(domain_array==_env.NODE_DIRICHLET)
+    neumann_nodes = numpy.argwhere(domain_array==_env.NODE_NEUMANN)
+    robin_nodes = numpy.argwhere(domain_array==_env.NODE_ROBIN)
+
+    interior_col = [254,254,254] # white
+    complementary_col = [145,1,254] # purple
+    dirichlet_col = [1,237,254] # light blue
+    neumann_col = [254,17,0] # red
+    robin_col = [110,254,0] # green
+
+    domain_col = numpy.zeros((*domain_array.shape, 3), dtype=numpy.int64)
+
+    domain_col[interior_nodes[:,0], interior_nodes[:,1], :] = interior_col
+    domain_col[complementary_nodes[:,0], complementary_nodes[:,1], :] = complementary_col
+    domain_col[dirichlet_nodes[:,0], dirichlet_nodes[:,1], :] = dirichlet_col
+    domain_col[neumann_nodes[:,0], neumann_nodes[:,1], :] = neumann_col
+    domain_col[robin_nodes[:,0], robin_nodes[:,1], :] = robin_col
+
+    matplotlib.pyplot.imshow(domain_col)
+    matplotlib.pyplot.title(title)
+    filename = filename
+    matplotlib.pyplot.savefig(filename)
+    matplotlib.pyplot.close()

@@ -69,8 +69,9 @@ def your_compute_objective_function(domain_omega, u, spacestep):
         spacestep: float, it corresponds to the step used to solve the Helmholtz
         equation.
     """
-
-    energy = 0.0
+    # every element has the same size : spacestep^2
+    u_line = numpy.reshape(u, -1)
+    energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
 
     return energy
 
@@ -164,6 +165,7 @@ if __name__ == '__main__':
     un = u.copy()
 
     # -- plot chi, u, and energy
+    postprocessing.plot_domain(domain_omega)
     postprocessing._plot_uncontroled_solution(u0, chi0)
     postprocessing._plot_controled_solution(un, chin)
     err = un - u0
