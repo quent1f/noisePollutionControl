@@ -164,6 +164,7 @@ if __name__ == '__main__':
     un = u.copy()
 
     # -- plot chi, u, and energy
+    postprocessing.plot_domain(domain_omega)
     postprocessing._plot_uncontroled_solution(u0, chi0)
     postprocessing._plot_controled_solution(un, chin)
     err = un - u0
