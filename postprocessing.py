@@ -123,7 +123,7 @@ def _plot_energy_history(energy):
     return
 
 # we can now plot domains
-def plot_domain(domain):
+def plot_domain(domain, title='Domain', filename='fig_domain.jpg'):
     """
     NODE_INTERIOR = -1  # nodes located in the interior
     NODE_COMPLEMENTARY = -2  # nodes located in the complement of (interior + frontier)
@@ -134,11 +134,11 @@ def plot_domain(domain):
 
     domain_array = numpy.array(domain)
 
-    interior_nodes = numpy.argwhere(domain_array==-1)
-    complementary_nodes = numpy.argwhere(domain_array==-2)
-    dirichlet_nodes = numpy.argwhere(domain_array==1)
-    neumann_nodes = numpy.argwhere(domain_array==2)
-    robin_nodes = numpy.argwhere(domain_array==3)
+    interior_nodes = numpy.argwhere(domain_array==_env.NODE_INTERIOR)
+    complementary_nodes = numpy.argwhere(domain_array==_env.NODE_COMPLEMENTARY)
+    dirichlet_nodes = numpy.argwhere(domain_array==_env.NODE_DIRICHLET)
+    neumann_nodes = numpy.argwhere(domain_array==_env.NODE_NEUMANN)
+    robin_nodes = numpy.argwhere(domain_array==_env.NODE_ROBIN)
 
     interior_col = [254,254,254] # white
     complementary_col = [145,1,254] # purple
@@ -155,7 +155,7 @@ def plot_domain(domain):
     domain_col[robin_nodes[:,0], robin_nodes[:,1], :] = robin_col
 
     matplotlib.pyplot.imshow(domain_col)
-    matplotlib.pyplot.title('Domain')
-    filename = 'fig_domain.jpg'
+    matplotlib.pyplot.title(title)
+    filename = filename
     matplotlib.pyplot.savefig(filename)
     matplotlib.pyplot.close()
