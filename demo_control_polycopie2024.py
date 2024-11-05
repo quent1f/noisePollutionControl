@@ -74,7 +74,7 @@ def your_compute_objective_function(domain_omega, u, spacestep):
     u = numpy.array(u, copy=True)
     mask = numpy.zeros(u.shape, dtype=bool)
     mask[coordinates_to_mask[:,0], coordinates_to_mask[:,1]] = True
-    u_masked = numpy.ma.array(data=u, mask=coordinates_to_mask)
+    u_masked = numpy.ma.array(data=u, mask=mask)
     u_line = numpy.reshape(u_masked, -1)
     energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
 

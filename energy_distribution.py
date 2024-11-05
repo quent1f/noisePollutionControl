@@ -26,10 +26,13 @@ def get_energies_frequency_plage(plage):
     :param plage: numpy.array([[wavenumber, inciding_wave_power/energy], [], ...], type=float)
     :return energies: numpy.array([[wavenumber, system_energy], [], ...], type=float)
     '''
-    energies = numpy.array([])
+    energies = []
     for i in range(len(plage)):
         energy = demo_control_polycopie2024.launch_experience(wavenumber=plage[i][0], incident_wave_energy=plage[i][1], optimize=False)
-    
+        energies.append([energy,plage[i][0]])
+    print(energies)
+    energies = numpy.array(energies)
+    print(energies)
     return energies
 
 def plot_energy_distribution(energies):
@@ -50,6 +53,6 @@ def plot_energy_distribution(energies):
     matplotlib.pyplot.close()
     
 if __name__ == '__main__':
-    plage_test_1 = numpy.array([[10,1]])
+    plage_test_1 = numpy.array([[10**(k), 1] for k in range(-3,4)])
     energies = get_energies_frequency_plage(plage_test_1)
-    plot_energy_distribution()
+    plot_energy_distribution(energies)
