@@ -16,7 +16,8 @@ import postprocessing
 
 ### Constant for gradient descent 
 
-EPSILON1 = 10**(-2)
+
+EPSILON1 = 5*10**(-2)
 EPSILON2 = 10**(-2)
 
 def reLinearProj(chi, l):
@@ -26,8 +27,8 @@ def reLinearProj(chi, l):
             chi[i, j] = max(0, min(chi[i, j] + l, 1))
     return chi
 
-
-def your_optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob,
+# Attention :  j'ai enlevé omega (la fréquence) dans les paramètres (pour le moment je ne vois pas en quoi cela influe sur notre methode d'optimisation)
+def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
                            Alpha, mu, chi, V_obj):
     """This function return the optimized density.
@@ -60,7 +61,8 @@ def your_optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu,
         ene = compute_objective_function(domain_omega, u, spacestep)                                            # Calcul de l'energie pour u 
         energy[k] = ene
         print('4. computing parametric gradient')
-        grad = -numpy.real(Alpha*u*p)                       
+        grad = -numpy.real(Alpha*u*p)      
+        # print("Valeur du gradient : ", grad[49])
         while ene >= energy[k] and mu > 10 ** -5:
             print('    a. computing gradient descent')
             new_chi = chi - mu*grad
@@ -82,6 +84,7 @@ def your_optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
             print('    d. computing objective function, i.e., energy (E)')
             ene = compute_objective_function(domain_omega, u, spacestep)
+            print("energie: ",ene)
             if ene <  energy[k]:
                 # The step is increased if the energy decreased
                 mu = mu * 1.1
@@ -108,18 +111,20 @@ def compute_objective_function(domain_omega, u, spacestep):
         equation.
     """
     # every element has the same size : spacestep^2
-    coordinates_to_mask = numpy.argwhere(domain_omega != _env.NODE_INTERIOR)
-    u = numpy.array(u, copy=True)
-    mask = numpy.zeros(u.shape, dtype=bool)
-    mask[coordinates_to_mask[:,0], coordinates_to_mask[:,1]] = True
-    u_masked = numpy.ma.array(data=u, mask=coordinates_to_mask)
-    u_line = numpy.reshape(u_masked, -1)
+    # coordinates_to_mask = numpy.argwhere(domain_omega != _env.NODE_INTERIOR)
+    # u = numpy.array(u, copy=True)
+    # mask = numpy.zeros(u.shape, dtype=bool)
+    # mask[coordinates_to_mask[:,0], coordinates_to_mask[:,1]] = True
+    # u_masked = numpy.ma.array(data=u, mask=coordinates_to_mask)
+    # u_line = numpy.reshape(u_masked, -1)
+    # energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
+    u_line = numpy.reshape(u, -1)
     energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
-
     return energy
 
 
 if __name__ == '__main__':
+
 
     # ----------------------------------------------------------------------
     # -- Fell free to modify the function call in this cell.
@@ -198,7 +203,9 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------
     # -- compute optimization
     energy = numpy.zeros((100+1, 1), dtype=numpy.float64)
-    # chi, energy, u, grad = your_optimization_procedure(...)
+    chi, energy, u, grad = your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
+                           beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
+                           Alpha, mu, chi, V_obj)
     #chi, energy, u, grad = solutions.optimization_procedure(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
     #                    beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
     #                    Alpha, mu, chi, V_obj, mu1, V_0)
@@ -214,5 +221,6 @@ if __name__ == '__main__':
     err = un - u0
     postprocessing._plot_error(err)
     postprocessing._plot_energy_history(energy)
+    print("Valeur des énergies : ", energy)
 
     print('End.')
