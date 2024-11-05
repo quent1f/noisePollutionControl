@@ -71,6 +71,7 @@ def your_compute_objective_function(domain_omega, u, spacestep):
     """
     # every element has the same size : spacestep^2
     coordinates_to_mask = numpy.argwhere(domain_omega != _env.NODE_INTERIOR)
+    u = numpy.array(u, copy=True)
     mask = numpy.zeros(u.shape, dtype=bool)
     mask[coordinates_to_mask[:,0], coordinates_to_mask[:,1]] = True
     u_masked = numpy.ma.array(data=u, mask=coordinates_to_mask)
