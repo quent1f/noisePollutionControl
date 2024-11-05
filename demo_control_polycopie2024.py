@@ -70,7 +70,11 @@ def your_compute_objective_function(domain_omega, u, spacestep):
         equation.
     """
     # every element has the same size : spacestep^2
-    u_line = numpy.reshape(u, -1)
+    coordinates_to_mask = numpy.argwhere(domain_omega != _env.NODE_INTERIOR)
+    mask = numpy.zeros(u.shape, dtype=bool)
+    mask[coordinates_to_mask[:,0], coordinates_to_mask[:,1]] = True
+    u_masked = numpy.ma.array(data=u, mask=coordinates_to_mask)
+    u_line = numpy.reshape(u_masked, -1)
     energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
 
     return energy
