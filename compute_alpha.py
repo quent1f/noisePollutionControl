@@ -172,10 +172,10 @@ def compute_alpha(omega, material):
         temp = numpy.real(sum_e_k(omega)(alpha))
         return temp
 
-    temp_alpha = alpha(omega)
+    temp_alpha = alpha(omega)           # Qu'est la fct alpha ? Qu'est la var omega ?
     temp_error = error(temp_alpha, omega)
 
-    return temp_alpha, temp_error
+    return temp_alpha, temp_error       # Que sont temp_alpha et temp_error ?
 
 
 def run_compute_alpha(material):

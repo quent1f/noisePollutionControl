@@ -11,7 +11,7 @@ import os
 import _env
 
 
-def myimshow(tab, **kwargs):
+def myimshow(tab, **kwargs): # routine. Stylé, un bon exemple de code factorisé
     """Customized plot."""
 
     if 'dpi' in kwargs and kwargs['dpi']:
@@ -67,12 +67,15 @@ def myimshow(tab, **kwargs):
     return
 
 
-def _plot_uncontroled_solution(u, chi):
+def _plot_uncontroled_solution(u, chi, alpha_rob):
 #def _plot_uncontroled_solution(x_plot, y_plot, x, y, u, chi):
 
     myimshow(numpy.real(u), title='$\operatorname{Re}(u_{0})$ in $\Omega$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename='fig_u0_re.jpg')
     myimshow(numpy.imag(u), title='$\operatorname{Im}(u_{0})$ in $\Omega$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename='fig_u0_im.jpg')
     myimshow(chi, title='$\chi_{0}$ in $\Omega$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename='fig_chi0_re.jpg')
+    myimshow(numpy.real(alpha_rob), colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename='fig_alpha_rob_re_0.jpg' )
+    # Ok, il semblerait que chi puisse aller de -1 à 1. 
+    
     # k_begin = 0
     # k_end = len(x) - 1
     # for k in range(k_begin, k_end):
@@ -159,3 +162,42 @@ def plot_domain(domain, title='Domain', filename='fig_domain.jpg'):
     filename = filename
     matplotlib.pyplot.savefig(filename)
     matplotlib.pyplot.close()
+    
+# def plot_alpha(domain, alpha_rob, title='Alpha', filename='fig_alpha.jpg'):
+#     """
+#     NODE_INTERIOR = -1  # nodes located in the interior
+#     NODE_COMPLEMENTARY = -2  # nodes located in the complement of (interior + frontier)
+#     NODE_DIRICHLET = 1  # nodes with dirichlet boundary condition
+#     NODE_NEUMANN = 2  # nodes with neumann boundary condition
+#     NODE_ROBIN = 3  # nodes with robin boundary condition
+#     """
+
+#     domain_array = numpy.array(domain)
+
+#     interior_nodes = numpy.argwhere(domain_array==_env.NODE_INTERIOR)
+#     complementary_nodes = numpy.argwhere(domain_array==_env.NODE_COMPLEMENTARY)
+#     dirichlet_nodes = numpy.argwhere(domain_array==_env.NODE_DIRICHLET)
+#     neumann_nodes = numpy.argwhere(domain_array==_env.NODE_NEUMANN)
+#     robin_nodes = numpy.argwhere(domain_array==_env.NODE_ROBIN)
+
+#     interior_col = [254,254,254] # white
+#     complementary_col = [254,254,254] # white
+#     dirichlet_col = [1,237,254] # light blue
+#     neumann_col = [254,17,0] # red
+#     robin_col = [110,254,0] # green
+
+#     domain_col = numpy.zeros((*domain_array.shape, 3), dtype=numpy.int64)
+
+#     domain_col[interior_nodes[:,0], interior_nodes[:,1], :] = interior_col
+#     domain_col[complementary_nodes[:,0], complementary_nodes[:,1], :] = complementary_col
+#     domain_col[dirichlet_nodes[:,0], dirichlet_nodes[:,1], :] = dirichlet_col
+#     domain_col[neumann_nodes[:,0], neumann_nodes[:,1], :] = neumann_col
+#     for node in robin_nodes:
+        
+#     domain_col[robin_nodes[:,0], robin_nodes[:,1], :] = robin_col
+
+#     matplotlib.pyplot.imshow(alpha_rob)
+#     matplotlib.pyplot.title(title)
+#     filename = filename
+#     matplotlib.pyplot.savefig(filename)
+#     matplotlib.pyplot.close()

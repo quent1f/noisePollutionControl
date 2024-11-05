@@ -159,7 +159,7 @@ def create_fractal_nodes(nodes, n_iter):
             new_nodes = new_nodes + temp
         n += 1
         nodes = new_nodes
-
+        
     return nodes
 
 

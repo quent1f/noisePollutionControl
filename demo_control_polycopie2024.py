@@ -18,7 +18,7 @@ import postprocessing
 def your_optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
                            Alpha, mu, chi, V_obj):
-    """This function return the optimized density.
+    """This function return the optimized density. Ok, l'algo part d'une forme de frontière, puis l'optimise.
 
     Parameter:
         cf solvehelmholtz's remarks
@@ -80,23 +80,24 @@ def your_compute_objective_function(domain_omega, u, spacestep):
 
     return energy
 
-
-if __name__ == '__main__':
-
+def launch_experience(wavenumber = 10.0, incident_wave_energy = 1.0, optimize = True, display = False) :
+    '''
+    The original code, just in a function, in order to be called from other files.
+    '''
     # ----------------------------------------------------------------------
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
     # -- set parameters of the geometry
     N = 50  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 0 # level of the fractal
+    level = 3 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
-    # -- set parameters of the partial differential equation
-    kx = -1.0
-    ky = -1.0
-    wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
-    wavenumber = 10.0
+    # -- set parameters of the partial differential equation | pas utilisé pour l'instant (pour changer l'inclinaison de l'onde incidente), je le commente donc.
+    # kx = -1.0             
+    # ky = -1.0
+    # wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
+
 
     # ----------------------------------------------------------------------
     # -- Do not modify this cell, these are the values that you will be assessed against.
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     # -- define boundary conditions
     # planar wave defined on top
     f_dir[:, :] = 0.0
-    f_dir[0, 0:N] = 1.0
+    f_dir[0, 0:N] = incident_wave_energy
     # spherical wave defined on top
     #f_dir[:, :] = 0.0
     #f_dir[0, int(N/2)] = 10.0
@@ -130,10 +131,12 @@ if __name__ == '__main__':
 
     # -- define absorbing material
     Alpha = 10.0 - 10.0 * 1j
+    # Alpha = 0 - 0 * 1j
     # -- this is the function you have written during your project
     #import compute_alpha
     #Alpha = compute_alpha.compute_alpha(...)
     alpha_rob = Alpha * chi
+    
 
     # -- set parameters for optimization
     S = 0  # surface of the fractal
@@ -158,23 +161,30 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
-    # -- compute optimization
-    energy = numpy.zeros((100+1, 1), dtype=numpy.float64)
-    # chi, energy, u, grad = your_optimization_procedure(...)
-    #chi, energy, u, grad = solutions.optimization_procedure(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
-    #                    beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-    #                    Alpha, mu, chi, V_obj, mu1, V_0)
-    # --- en of optimization
+    if optimize:
+        # -- compute optimization
+        energy = numpy.zeros((100+1, 1), dtype=numpy.float64)
+        # chi, energy, u, grad = your_optimization_procedure(...)
+        #chi, energy, u, grad = solutions.optimization_procedure(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+        #                    beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
+        #                    Alpha, mu, chi, V_obj, mu1, V_0)
+        # --- en of optimization
 
-    chin = chi.copy()
-    un = u.copy()
+        chin = chi.copy()
+        un = u.copy()
 
-    # -- plot chi, u, and energy
-    postprocessing.plot_domain(domain_omega)
-    postprocessing._plot_uncontroled_solution(u0, chi0)
-    postprocessing._plot_controled_solution(un, chin)
-    err = un - u0
-    postprocessing._plot_error(err)
-    postprocessing._plot_energy_history(energy)
+    if display:
+        # -- plot chi, u, and energy
+        postprocessing.plot_domain(domain_omega)
+        postprocessing._plot_uncontroled_solution(u0, chi0, alpha_rob)
+        postprocessing._plot_controled_solution(un, chin)
+        err = un - u0
+        postprocessing._plot_error(err)
+        postprocessing._plot_energy_history(energy)
 
-    print('End.')
+    energy = your_compute_objective_function(domain_omega, u0, spacestep)
+    return energy
+
+if __name__ == '__main__':
+    launch_experience()
+    
