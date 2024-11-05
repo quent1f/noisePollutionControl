@@ -50,13 +50,11 @@ def your_optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu,
                 # The step is decreased is the energy increased
                 mu = mu / 2
         k += 1
-
     print('end. computing solution of Helmholtz problem, i.e., u')
-
     return chi, energy, u, grad
 
 
-def your_compute_objective_function(domain_omega, u, spacestep):
+def compute_objective_function(domain_omega, u, spacestep):
     """
     This function compute the objective function:
     J(u,domain_omega)= \int_{domain_omega}||u||^2 
