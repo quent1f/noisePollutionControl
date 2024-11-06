@@ -2,12 +2,11 @@ import _env
 import numpy
 import preprocessing
 
-#TODO
 def rectified_linear(vect):
-    pass
+    return numpy.max(0, numpy.min(vect, 1))
 
 def sigmoid(vect, a):
-    1 / (1+numpy.exp(-a*(vect-0.5)))
+    return 1 / (1+numpy.exp(-a*(vect-0.5)))
 
 #TODO
 def flattened_linear(vect, delta):
