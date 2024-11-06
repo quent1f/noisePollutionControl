@@ -143,8 +143,8 @@ def plot_domain(domain, title='Domain', filename='fig_domain.jpg'):
     interior_col = [254,254,254] # white
     complementary_col = [145,1,254] # purple
     dirichlet_col = [1,237,254] # light blue
-    neumann_col = [254,17,0] # red
-    robin_col = [110,254,0] # green
+    neumann_col = [254,17,1] # red
+    robin_col = [110,254,1] # green
 
     domain_col = numpy.zeros((*domain_array.shape, 3), dtype=numpy.int64)
 
