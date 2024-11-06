@@ -5,8 +5,10 @@ import preprocessing
 def rectified_linear(vect):
     return numpy.maximum(0, numpy.minimum(vect, 1))
 
-def sigmoid(vect, a):
-    return 1 / (1+numpy.exp(-a*(vect-0.5)))
+def sigmoid(a):
+    def sig(vect):
+        return 1 / (1+numpy.exp(-a*(vect-0.5)))
+    return sig
 
 #TODO
 def flattened_linear(vect, delta):
