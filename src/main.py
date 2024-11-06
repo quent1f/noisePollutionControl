@@ -75,7 +75,6 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
 
     #### Plotting (saved on files)
 
-    postprocessing.plot_domain(domain_omega)
     postprocessing._plot_uncontroled_solution(u_init, initial_chi)
     postprocessing._plot_controled_solution(u_final, chi_final)
     postprocessing._plot_controled_projected_solution(u_final_projected, chi_final_projected)
@@ -99,7 +98,7 @@ if __name__ == '__main__':
     # -- set parameters of the partial differential equation
     wavenumber = 10.0                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
 
-    V_obj = 0.5
+    V_obj = 0.25
     mu = 5
     Alpha = 2.0 - 8.0 * 1j
     # Alpha = computeAlpha(...)

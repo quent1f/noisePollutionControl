@@ -147,6 +147,7 @@ def _plot_energy_history(energy):
     filename = 'fig_energy_real.jpg'
     matplotlib.pyplot.savefig(filename)
     matplotlib.pyplot.close()
+    
 
     return
 
