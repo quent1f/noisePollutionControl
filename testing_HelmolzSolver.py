@@ -67,9 +67,9 @@ def compute_projected(chi, domain, V_obj):
         else:
             debut = l
         ecart = fin - debut
-        print('le volume est', V, 'le volume objectif est', V_obj)
-
-    return chi
+        # print('le volume est', V, 'le volume objectif est', V_obj, "l'écart est", ecart)
+    return
+    # return chi
 
 def BelongsInteriorDomain(node):
 	if (node < 0):
@@ -132,9 +132,7 @@ def compute_gradient_descent(chi, grad, domain, mu):
 			if d == 2:
 				# print(i, j - 1, "-----", "i , j - 1")
 				chi[i, j - 1] = chi[i, j - 1] - mu * grad[i, j]
-
-	return chi
-
+	# return chi
 
 # Attention :  j'ai enlevé omega (la fréquence) dans les paramètres (pour le moment je ne vois pas en quoi cela influe sur notre methode d'optimisation)
 def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
@@ -153,7 +151,7 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
     (M, N) = numpy.shape(domain_omega)
     numb_iter = 100
     energy = numpy.zeros((numb_iter+1, 1), dtype=numpy.float64)
-    while k < numb_iter and mu > 10**(-5):
+    while k < numb_iter and mu > EPSILON0:
         print('---- iteration number = ', k)
         print('1. computing solution of Helmholtz problem, i.e., u')
         ######  On update les conditions aux bord de Robin (puisque l'on a changé chi)
@@ -169,18 +167,21 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
         print('3. computing objective function, i.e., energy')
         ene = compute_objective_function(domain_omega, u, spacestep)                                            # Calcul de l'energie pour u 
         energy[k] = ene
-        print("1st energy", ene)
+        print(f"{k} ème energie", ene)
         print('4. computing parametric gradient')
         grad = numpy.real(Alpha*u*p)
-        postprocessing.myimshow(grad, title='$gradient évalué en \chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_grad.jpg')
-        print(chi[50], k)
+        postprocessing.myimshow(grad, title='gradient évalué en $\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_grad_{k}.jpg')
         while ene >= energy[k] and mu > EPSILON0:
             print('    a. computing gradient descent')
-            new_chi = compute_gradient_descent(chi, grad, domain_omega, mu)
+            new_chi = chi.copy()
+            compute_gradient_descent(new_chi, grad, domain_omega, mu)
             print('    b. computing projected gradient')
-            new_chi_proj = compute_projected(new_chi, domain_omega, V_obj)
+            # print("before projection", new_chi[50])
+            compute_projected(new_chi, domain_omega, V_obj)
+            # print("after projection", new_chi_proj[50])
+            postprocessing.myimshow(new_chi, title='$\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_chi_{k}.jpg')
             print('    c. computing solution of Helmholtz problem, i.e., u')
-            alpha_rob = Alpha * new_chi_proj 
+            alpha_rob = Alpha * new_chi
             u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
             print('    d. computing objective function, i.e., energy (E)')
@@ -188,13 +189,17 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
             print("energie: ",ene)
             if ene <  energy[k]:
                 # The step is increased if the energy decreased
-                mu = mu * 1.1    
-                chi = new_chi_proj
+                mu = mu * 1.1
+                chi = new_chi
+                # print("new_chi !!!!")
             else:
                 # The step is decreased is the energy increased
-                mu = mu / 2
+                mu = mu * 0.8
         k += 1
     print('end. computing solution of Helmholtz problem, i.e., u')
+    alpha_rob = Alpha * chi
+    u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+                beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
     return chi, energy, u, grad
 
 
@@ -222,22 +227,20 @@ def compute_objective_function(domain_omega, u, spacestep):
     return energy
 
 if __name__ == '__main__':
-
-
     # ----------------------------------------------------------------------
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
     # -- set parameters of the geometry
     N = 50  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 0 # level of the fractal
+    level = 2 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
     # -- set parameters of the partial differential equation
     kx = -1.0
     ky = -1.0
     wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
-    wavenumber = 10.0
+    wavenumber = 10.0                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
 
     # ----------------------------------------------------------------------
     # -- Do not modify this cell, these are the values that you will be assessed against.
@@ -267,10 +270,9 @@ if __name__ == '__main__':
 
     # -- define material density matrix
     chi = preprocessing._set_chi(M, N, x, y)
-    chi = numpy.ones((M,N))
+    # chi = numpy.ones((M,N))
     chi = preprocessing.set2zero(chi, domain_omega)
-
-
+    
     # -- define absorbing material
     Alpha = 10.0 - 10.0 * 1j
 
@@ -287,6 +289,7 @@ if __name__ == '__main__':
                 S += 1
     V_0 = 1  # initial volume of the domain
     V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
+    V_obj = 0.5
     mu = 5  # initial gradient step
     mu1 = 10**(-5)  # parameter of the volume functional
 
@@ -322,4 +325,5 @@ if __name__ == '__main__':
     postprocessing._plot_error(err)
     postprocessing._plot_energy_history(energy)
     print("Valeur des énergies : ", energy)
+    print("Last energy :", compute_objective_function(domain_omega, u, spacestep))
     print('End.')
