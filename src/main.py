@@ -15,12 +15,68 @@ import postprocessing
 import minimization_algo
 #import solutions
 
-def launch_simulation(N: int, level: int, spacestep: float):
+
+def computeSurface(domain_omega):
+    S = 0  # surface of the fractal
+    for i in range(0, M):
+        for j in range(0, N):
+            if domain_omega[i, j] == _env.NODE_ROBIN:
+                S += 1
+    return S
+
+def computeVolume(chi, S):
+    return numpy.sum(chi)/S
+
+def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, initial_chi, alpha: complex, V_obj: float, mu: float):
     """
     Lance la simulation et renvoie les plots interessants
-    
+    initial_chi : chi de départ pour la minimisation
+    V_obj : pourcentage du volume occupé par le matériau
+    mu : initial learning rate 
     """
+    ##### initialize pde domain
+    beta_pde, alpha_pde, alpha_dir, beta_neu, alpha_rob, beta_rob = preprocessing._set_coefficients_of_pde(M, N)
+    f, f_dir, f_neu, f_rob = preprocessing._set_rhs_of_pde(M, N)
+    domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
 
+    ##### conditions de dirichlet : on envoie une onde plainaire
+    f_dir[:, :] = 0.0
+    f_dir[0, 0:N] = 1.0
+
+    #####
+    S = computeSurface(domain_omega)
+
+    #### Initial Solving 
+    alpha_rob = Alpha * initial_chi
+    u_init = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+                        beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+
+    #### Optimization 
+
+    chi_final, energy, u_final, grad, chi_final_projected, u_final_projected = minimization_algo.optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
+                           beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
+                           Alpha, mu, chi, V_obj, wavenumber, S)
+    
+    #### Printing varialbes of interest
+
+    print("Energie de départ:", minimization_algo.compute_objective_function(domain_omega, u_init, spacestep))
+    print("Energie finale avec chi dans [0, 1]: ", minimization_algo.compute_objective_function(domain_omega, u_final, spacestep))
+    print("Energie finale avec chi projeté dans {0,1}", minimization_algo.compute_objective_function(domain_omega, u_final_projected, spacestep))
+    
+    print("Volume de chi dans [0,1]", computeVolume(chi_final, S))
+    print("Volume de chi projeté dans {0,1}", computeVolume(chi_final_projected, S))
+    print("Tableau des énergies", energy)
+    #### Plotting (saved on files)
+
+    postprocessing.plot_domain(domain_omega)
+    postprocessing._plot_uncontroled_solution(u0, chi0)
+    postprocessing._plot_controled_solution(un, chin)
+    postprocessing._plot_controled_projected_solution(u_projected, chi_projected)
+    err = un - u0
+    postprocessing._plot_error(err)
+    postprocessing._plot_energy_history(energy)
+
+    print('End.')
 
 if __name__ == '__main__':
     # ----------------------------------------------------------------------
@@ -83,7 +139,7 @@ if __name__ == '__main__':
         for j in range(0, N):
             if domain_omega[i, j] == _env.NODE_ROBIN:
                 S += 1
-    V_0 = 1  # initial volume of the domain
+
     V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
     V_obj = 0.5
     mu = 5  # initial gradient step

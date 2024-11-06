@@ -7,11 +7,11 @@ import os
 
 
 # MRG packages
-import projectors
 import _env
 import preprocessing
 import processing
 import postprocessing
+import computeProjectors
 #import solutions
 
 
@@ -22,57 +22,6 @@ EPSILON1 = 10**(-3)
 EPSILON2 = 10**(-4)
 
 ###
-
-def compute_projected(chi, domain, V_obj):
-    """This function performs the projection of $\chi^n - mu*grad
-
-    To perform the optimization, we use a projected gradient algorithm. This
-    function caracterizes the projection of chi onto the admissible space
-    (the space of $L^{infty}$ function which volume is equal to $V_{obj}$ and whose
-    values are located between 0 and 1).
-
-    :param chi: density matrix
-    :param domain: domain of definition of the equations
-    :param V_obj: characterizes the volume constraint
-    :type chi: numpy.array((M,N), dtype=float64)
-    :type domain: numpy.array((M,N), dtype=complex128)
-    :type float: float
-    :return:
-    :rtype:
-    """
-
-    (M, N) = numpy.shape(domain)
-    S = 0
-    for i in range(M):
-        for j in range(N):
-            if domain[i, j] == _env.NODE_ROBIN:
-                S = S + 1
-
-    B = chi.copy()
-    l = 0
-    chi = preprocessing.set2zero(chi, domain)
-
-    V = numpy.sum(chi) / S
-    debut = -numpy.max(chi)
-    fin = numpy.max(chi)
-    ecart = fin - debut
-    # We use dichotomy to find a constant such that chi^{n+1}=max(0,min(chi^{n}+l,1)) is an element of the admissible space
-    while ecart > 10 ** -4:
-        # calcul du milieu
-        l = (debut + fin) / 2
-        for i in range(M):
-            for j in range(N):
-                chi[i, j] = numpy.maximum(0, numpy.minimum(B[i, j] + l, 1))
-        chi = preprocessing.set2zero(chi, domain)
-        V = numpy.sum(chi) / S
-        if V > V_obj:
-            fin = l
-        else:
-            debut = l
-        ecart = fin - debut
-        # print('le volume est', V, 'le volume objectif est', V_obj, "l'écart est", ecart)
-    return
-    # return chi
 
 def BelongsInteriorDomain(node):
 	if (node < 0):
@@ -170,9 +119,9 @@ def sorting_method(domain, chi, V_obj, S):
 
 
 # Attention :  j'ai enlevé omega (la fréquence) dans les paramètres (pour le moment je ne vois pas en quoi cela influe sur notre methode d'optimisation)
-def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
+def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-                           Alpha, mu, chi, V_obj):
+                           Alpha, mu, chi, V_obj, wavenumber, S):
     """This function return the optimized density.
 
     Parameter:
@@ -185,7 +134,7 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
     k = 0
     (M, N) = numpy.shape(domain_omega)
     numb_iter = 100
-    energy = numpy.zeros((numb_iter+1, 1), dtype=numpy.float64)
+    energy = []
     while k < numb_iter and mu > EPSILON0:
         print('---- iteration number = ', k)
         print('1. computing solution of Helmholtz problem, i.e., u')
@@ -201,7 +150,7 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
         print('3. computing objective function, i.e., energy')
         ene = compute_objective_function(domain_omega, u, spacestep)                                            # Calcul de l'energie pour u 
-        energy[k] = ene
+        energy.append(ene)
         print(f"{k} ème energie", ene)
         print('4. computing parametric gradient')
         grad = numpy.real(Alpha*u*p)
@@ -212,8 +161,7 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
             compute_gradient_descent(new_chi, grad, domain_omega, mu)
             print('    b. computing projected gradient')
             # print("before projection", new_chi[50])
-            # projectors.my_compute_projection(new_chi, domain_omega, V_obj, projectors.rectified_linear)
-            compute_projected(new_chi, domain_omega, V_obj)
+            computeProjectors.my_compute_projection(new_chi, domain_omega, V_obj, computeProjectors.rectified_linear)
             # print("after projection", new_chi_proj[50])
             postprocessing.myimshow(new_chi, title='$\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_chi_{k}.jpg')
             print('    c. computing solution of Helmholtz problem, i.e., u')

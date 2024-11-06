@@ -210,7 +210,7 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
             compute_gradient_descent(new_chi, grad, domain_omega, mu)
             print('    b. computing projected gradient')
             # print("before projection", new_chi[50])
-            new_chi = projectors.my_compute_projection(new_chi, domain_omega, V_obj, projectors.sigmoid)
+            new_chi = projectors.my_compute_projection(new_chi, domain_omega, V_obj, projectors.rectified_linear)
             # compute_projected(new_chi, domain_omega, V_obj)
             # print("after projection", new_chi_proj[50])
             postprocessing.myimshow(new_chi, title='$\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_chi_{k}.jpg')
@@ -271,7 +271,7 @@ if __name__ == '__main__':
     # -- set parameters of the geometry
     N = 50  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 1 # level of the fractal
+    level = 2 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
     # -- set parameters of the partial differential equation
