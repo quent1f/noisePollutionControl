@@ -26,7 +26,6 @@ def my_compute_projection(chi, domain, V_obj, phi=rectified_linear):
     :type chi: numpy.array((M,N), dtype=float64)
     :type domain: numpy.array((M,N), dtype=complex128)
     :type float: float
-    :return:
     :rtype:
     """
     S = numpy.count_nonzero(domain == _env.NODE_ROBIN) # will be used at each iteration
@@ -38,11 +37,13 @@ def my_compute_projection(chi, domain, V_obj, phi=rectified_linear):
     debut = -numpy.max(chi)
     fin = numpy.max(chi)
 
+    chi_copy = chi.copy()
+
     ecart = fin - debut
     while ecart > 10 ** -4: # we must stop looking for l when close enough
         # calcul du milieu
         l = (debut + fin) / 2
-        chi = phi(chi+l)
+        chi = phi(chi_copy+l)
         chi = preprocessing.set2zero(chi, domain) # making sure that chi is 0 on the rest of the mesh
         V = numpy.sum(chi) / S
         if V > V_obj:
@@ -52,6 +53,6 @@ def my_compute_projection(chi, domain, V_obj, phi=rectified_linear):
         ecart = fin - debut
         print('le volume est', V, 'le volume objectif est', V_obj)
 
-    return chi
+    return
 
 # We use dichotomy to find a constant such that chi^{n+1}=max(0,min(chi^{n}+l,1)) is an element of the admissible space
