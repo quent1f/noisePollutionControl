@@ -156,7 +156,7 @@ def sorting_method(domain, chi, V_obj, S):
     values_per_coordinate = chi[coordinates_wall[:,0], coordinates_wall[:,1]]
     sorting_indices = numpy.argsort(-values_per_coordinate) # indices that would sort the values in ascending order
     sorted_coordinates = coordinates_wall[sorting_indices] # coordinates in this order
-    print(sorted_coordinates)
+    # print(sorted_coordinates)
     
     # we set the N_obj biggest values of chi to 1
     chi_proj[sorted_coordinates[:N_obj, 0], sorted_coordinates[:N_obj, 1]] = 1
@@ -226,13 +226,17 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                 # print("new_chi !!!!")
             else:
                 # The step is decreased is the energy increased
-                mu = mu * 0.8
+                mu = mu * 0.5
         k += 1
     print('end. computing solution of Helmholtz problem, i.e., u')
     alpha_rob = Alpha * chi
     u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                 beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-    return chi, energy, u, grad
+    chi_projected = sorting_method(domain_omega, chi, V_obj, S)
+    alpha_rob = Alpha * chi_projected
+    u_projected =  processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+                beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+    return chi, energy, u, grad, chi_projected, u_projected
 
 
 def compute_objective_function(domain_omega, u, spacestep):
@@ -265,7 +269,7 @@ if __name__ == '__main__':
     # -- set parameters of the geometry
     N = 50  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 2 # level of the fractal
+    level = 1 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
     # -- set parameters of the partial differential equation
@@ -338,7 +342,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------
     # -- compute optimization
     energy = numpy.zeros((100+1, 1), dtype=numpy.float64)
-    chi, energy, u, grad = your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
+    chi, energy, u, grad, chi_projected, u_projected = your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
                            Alpha, mu, chi, V_obj)
     #chi, energy, u, grad = solutions.optimization_procedure(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
@@ -349,13 +353,17 @@ if __name__ == '__main__':
     chin = chi.copy()
     un = u.copy()
 
+
     # -- plot chi, u, and energy
     postprocessing.plot_domain(domain_omega)
     postprocessing._plot_uncontroled_solution(u0, chi0)
     postprocessing._plot_controled_solution(un, chin)
+    postprocessing._plot_controled_solution(u_projected, chi_projected)
     err = un - u0
     postprocessing._plot_error(err)
     postprocessing._plot_energy_history(energy)
     print("Valeur des énergies : ", energy)
     print("Last energy :", compute_objective_function(domain_omega, u, spacestep))
+    print("Last energy after PROJECTION :", compute_objective_function(domain_omega, u_projected, spacestep))
+    print(numpy.sum(chi_projected)/S)
     print('End.')
