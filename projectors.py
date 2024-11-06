@@ -38,7 +38,7 @@ def my_compute_projection(chi, domain, V_obj, phi=rectified_linear):
     fin = numpy.max(chi)
 
     chi_copy = chi.copy()
-
+    l = 0
     ecart = fin - debut
     while ecart > 10 ** -4: # we must stop looking for l when close enough
         # calcul du milieu
@@ -51,8 +51,8 @@ def my_compute_projection(chi, domain, V_obj, phi=rectified_linear):
         else:
             debut = l
         ecart = fin - debut
-        print('le volume est', V, 'le volume objectif est', V_obj)
+        # print('le volume est', V, 'le volume objectif est', V_obj)
 
-    return
+    return chi
 
 # We use dichotomy to find a constant such that chi^{n+1}=max(0,min(chi^{n}+l,1)) is an element of the admissible space
