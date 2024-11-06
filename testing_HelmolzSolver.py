@@ -8,6 +8,7 @@ import os
 
 
 # MRG packages
+import projectors
 import _env
 import preprocessing
 import processing
@@ -209,7 +210,7 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
             compute_gradient_descent(new_chi, grad, domain_omega, mu)
             print('    b. computing projected gradient')
             # print("before projection", new_chi[50])
-            compute_projected(new_chi, domain_omega, V_obj)
+            projectors.my_compute_projection(new_chi, domain_omega, V_obj, projectors.rectified_linear)
             # print("after projection", new_chi_proj[50])
             postprocessing.myimshow(new_chi, title='$\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_chi_{k}.jpg')
             print('    c. computing solution of Helmholtz problem, i.e., u')
