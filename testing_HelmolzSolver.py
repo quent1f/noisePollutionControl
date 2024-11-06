@@ -135,11 +135,41 @@ def compute_gradient_descent(chi, grad, domain, mu):
 
 	return chi
 
+# a projection method ([0,1] to {0,1})
+def sorting_method(domain, chi, V_obj, S):
+    """Projecting chi from gamma -> [0;1] to gamma -> {0;1}
+
+    Args:
+        chi (numpy.array): chi with values in [0;1]
+        V_obj (float): target volume. a ratio
+        S (int): number of nodes on frontier. computed during the optimization procedure
+
+    Returns:
+        chi_proj: chi with values in {0;1}
+    """
+
+    N_obj = round(S*V_obj) # number of nodes necessary to get closest to target
+    chi_proj = chi.copy()
+
+    # we want the list of (x,y) coordinates that sorts chi's values in ascending order
+    coordinates_wall = numpy.argwhere(domain == _env.NODE_ROBIN)
+    values_per_coordinate = chi[coordinates_wall[:,0], coordinates_wall[:,1]]
+    sorting_indices = numpy.argsort(-values_per_coordinate) # indices that would sort the values in ascending order
+    sorted_coordinates = coordinates_wall[sorting_indices] # coordinates in this order
+    print(sorted_coordinates)
+    
+    # we set the N_obj biggest values of chi to 1
+    chi_proj[sorted_coordinates[:N_obj, 0], sorted_coordinates[:N_obj, 1]] = 1
+    # we set its other values to 0
+    chi_proj[sorted_coordinates[N_obj:, 0], sorted_coordinates[N_obj:, 1]] = 0
+
+    return chi_proj
+
 
 # Attention :  j'ai enlevé omega (la fréquence) dans les paramètres (pour le moment je ne vois pas en quoi cela influe sur notre methode d'optimisation)
 def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-                           Alpha, mu, chi, V_obj):
+                           Alpha, mu, chi, V_obj, final_projection=sorting_method):
     """This function return the optimized density.
 
     Parameter:
@@ -296,30 +326,3 @@ if __name__ == '__main__':
     # -- compute finite difference solution
     u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-    chi0 = chi.copy()
-    u0 = u.copy()
-    # ----------------------------------------------------------------------
-    # -- Fell free to modify the function call in this cell.
-    # ----------------------------------------------------------------------
-    # -- compute optimization
-    energy = numpy.zeros((100+1, 1), dtype=numpy.float64)
-    chi, energy, u, grad = your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
-                           beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-                           Alpha, mu, chi, V_obj)
-    #chi, energy, u, grad = solutions.optimization_procedure(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
-    #                    beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-    #                    Alpha, mu, chi, V_obj, mu1, V_0)
-    # --- en of optimization
-
-    chin = chi.copy()
-    un = u.copy()
-
-    # -- plot chi, u, and energy
-    postprocessing.plot_domain(domain_omega)
-    postprocessing._plot_uncontroled_solution(u0, chi0)
-    postprocessing._plot_controled_solution(un, chin)
-    err = un - u0
-    postprocessing._plot_error(err)
-    postprocessing._plot_energy_history(energy)
-    print("Valeur des énergies : ", energy)
-    print('End.')
