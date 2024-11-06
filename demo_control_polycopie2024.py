@@ -91,7 +91,7 @@ if __name__ == '__main__':
     spacestep = 1.0 / N  # mesh size
 
     # -- set parameters of the partial differential equation
-    kx = -1.0
+    kx = 1.0
     ky = -1.0
     wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
     wavenumber = 10.0
@@ -125,6 +125,7 @@ if __name__ == '__main__':
     # -- define material density matrix
     chi = preprocessing._set_chi(M, N, x, y)
     chi = preprocessing.set2zero(chi, domain_omega)
+    # chi[50] = numpy.ones(50, dtype=numpy.float64)
 
     # -- define absorbing material
     Alpha = 10.0 - 10.0 * 1j
