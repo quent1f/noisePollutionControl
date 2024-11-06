@@ -84,9 +84,7 @@ def compute_gradient_descent(chi, grad, domain, mu):
 			if d == 2:
 				# print(i, j - 1, "-----", "i , j - 1")
 				chi[i, j - 1] = chi[i, j - 1] - mu * grad[i, j]
-
 	return chi
-
 # a projection method ([0,1] to {0,1})
 def sorting_method(domain, chi, V_obj, S):
     """Projecting chi from gamma -> [0;1] to gamma -> {0;1}
@@ -137,44 +135,45 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
     energy = []
     while k < numb_iter and mu > EPSILON0:
         print('---- iteration number = ', k)
-        print('1. computing solution of Helmholtz problem, i.e., u')
+        # print('1. computing solution of Helmholtz problem, i.e., u')
         ######  On update les conditions aux bord de Robin (puisque l'on a changé chi)
         alpha_rob = Alpha * chi
         u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-        print('2. computing solution of adjoint problem, i.e., p')
+        # print('2. computing solution of adjoint problem, i.e., p')
         ######  On souhaite résoudre le problème adjoint. On ajoute donc un terme source et on met la condition de dirichlet à 0 
         f_adj = -2*u.conj()
         f_adj_dir = numpy.zeros((M, N), dtype=numpy.complex128)
         p = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f_adj, f_adj_dir, f_neu, f_rob,     # résolution de l'edp adjointe
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-        print('3. computing objective function, i.e., energy')
+        # print('3. computing objective function, i.e., energy')
         ene = compute_objective_function(domain_omega, u, spacestep)                                            # Calcul de l'energie pour u 
         energy.append(ene)
         print(f"{k} ème energie", ene)
-        print('4. computing parametric gradient')
+        # print('4. computing parametric gradient')
         grad = numpy.real(Alpha*u*p)
         postprocessing.myimshow(grad, title='gradient évalué en $\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_grad_{k}.jpg')
         while ene >= energy[k] and mu > EPSILON0:
-            print('    a. computing gradient descent')
+            # print('    a. computing gradient descent')
             new_chi = chi.copy()
-            compute_gradient_descent(new_chi, grad, domain_omega, mu)
-            print('    b. computing projected gradient')
-            # print("before projection", new_chi[50])
-            computeProjectors.my_compute_projection(new_chi, domain_omega, V_obj, computeProjectors.rectified_linear)
-            # print("after projection", new_chi_proj[50])
-            postprocessing.myimshow(new_chi, title='$\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_chi_{k}.jpg')
-            print('    c. computing solution of Helmholtz problem, i.e., u')
-            alpha_rob = Alpha * new_chi
+            new_chi_grad = compute_gradient_descent(new_chi, grad, domain_omega, mu)
+            # print('    b. computing projected gradient')
+            # print("before projection", new_chi[62])
+            postprocessing.myimshow(new_chi_grad, title='$\chi$ before proj', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_chi_b4proj{k}.jpg')
+            new_chi_grad_projected = computeProjectors.my_compute_projection(new_chi_grad, domain_omega, V_obj, computeProjectors.rectified_linear)
+            # print("after projection", new_chi[62])
+            postprocessing.myimshow(new_chi_grad_projected, title='$\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_chi_{k}.jpg')
+            # print('    c. computing solution of Helmholtz problem, i.e., u')
+            alpha_rob = Alpha * new_chi_grad_projected
             u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-            print('    d. computing objective function, i.e., energy (E)')
+            # print('    d. computing objective function, i.e., energy (E)')
             ene = compute_objective_function(domain_omega, u, spacestep)
-            print("energie: ",ene)
+            # print("energie: ",ene)
             if ene <  energy[k]:
                 # The step is increased if the energy decreased
                 mu = mu * 1.1
-                chi = new_chi
+                chi = new_chi_grad_projected
                 # print("new_chi !!!!")
             else:
                 # The step is decreased is the energy increased

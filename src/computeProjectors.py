@@ -57,4 +57,5 @@ def my_compute_projection(chi, domain, V_obj, phi=rectified_linear):
 
     return chi
 
+
 # We use dichotomy to find a constant such that chi^{n+1}=max(0,min(chi^{n}+l,1)) is an element of the admissible space

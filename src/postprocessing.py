@@ -54,14 +54,22 @@ def myimshow(tab, **kwargs):
         matplotlib.pyplot.clim(vmin, vmax)
 
     if 'filename' in kwargs and kwargs['filename']:
-        output_file = kwargs['filename']
-        (root, ext) = os.path.splitext(output_file)
+        # Créer le dossier images_plots s'il n'existe pas
+        output_folder = "./images_plots"
+        os.makedirs(output_folder, exist_ok=True)
+
+        # Construire le chemin complet pour le fichier de sortie
+        output_file = os.path.join(output_folder, kwargs['filename'])
+        root, ext = os.path.splitext(output_file)
+
+        # Sauvegarder l'image dans le dossier images_plots
         matplotlib.pyplot.savefig(root + '_plot' + ext, format=ext[1:])
+        # print(f"Graphique sauvegardé dans : {root + '_plot' + ext}")
         matplotlib.pyplot.close()
     else:
+        # Afficher l'image si aucun nom de fichier n'est donné
         matplotlib.pyplot.show()
         matplotlib.pyplot.close()
-
     matplotlib.pyplot.close(fig)
 
     return
