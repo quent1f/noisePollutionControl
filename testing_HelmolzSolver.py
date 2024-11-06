@@ -61,13 +61,13 @@ def compute_projected(chi, domain, V_obj):
             for j in range(N):
                 chi[i, j] = numpy.maximum(0, numpy.minimum(B[i, j] + l, 1))
         chi = preprocessing.set2zero(chi, domain)
-        V = sum(sum(chi)) / S
+        V = numpy.sum(chi) / S
         if V > V_obj:
             fin = l
         else:
             debut = l
         ecart = fin - debut
-        # print('le volume est', V, 'le volume objectif est', V_obj)
+        print('le volume est', V, 'le volume objectif est', V_obj)
 
     return chi
 
@@ -173,7 +173,7 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
         print('4. computing parametric gradient')
         grad = numpy.real(Alpha*u*p)
         postprocessing.myimshow(grad, title='$gradient évalué en \chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_grad.jpg')
-
+        print(chi[50], k)
         while ene >= energy[k] and mu > EPSILON0:
             print('    a. computing gradient descent')
             new_chi = compute_gradient_descent(chi, grad, domain_omega, mu)
@@ -188,7 +188,7 @@ def your_optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
             print("energie: ",ene)
             if ene <  energy[k]:
                 # The step is increased if the energy decreased
-                mu = mu * 1.1
+                mu = mu * 1.1    
                 chi = new_chi_proj
             else:
                 # The step is decreased is the energy increased
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     # -- set parameters of the geometry
     N = 50  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 1 # level of the fractal
+    level = 0 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
     # -- set parameters of the partial differential equation
@@ -267,12 +267,13 @@ if __name__ == '__main__':
 
     # -- define material density matrix
     chi = preprocessing._set_chi(M, N, x, y)
- 
+    chi = numpy.ones((M,N))
     chi = preprocessing.set2zero(chi, domain_omega)
 
 
     # -- define absorbing material
     Alpha = 10.0 - 10.0 * 1j
+
     # -- this is the function you have written during your project
     #import compute_alpha
     #Alpha = compute_alpha.compute_alpha(...)
@@ -297,7 +298,6 @@ if __name__ == '__main__':
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
     chi0 = chi.copy()
     u0 = u.copy()
-
     # ----------------------------------------------------------------------
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
@@ -322,5 +322,4 @@ if __name__ == '__main__':
     postprocessing._plot_error(err)
     postprocessing._plot_energy_history(energy)
     print("Valeur des énergies : ", energy)
-
     print('End.')
