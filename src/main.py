@@ -41,7 +41,7 @@ def initialize_random_chi(M, N, x, y, V_obj):
 
 
 
-def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, Alpha: complex, V_obj: float, mu: float, chi_init: int, energy_method=minimization_algo.energy_omega):        # penser à ajouter un moyen de faire un initial chi différent
+def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, Alpha: complex, V_obj: float, mu: float, chi_init=0, energy_method=minimization_algo.energy_omega):        # penser à ajouter un moyen de faire un initial chi différent
     """
     Lance la simulation et renvoie les plots interessants
     initial_chi : chi de départ pour la minimisation

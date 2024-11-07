@@ -1,0 +1,20 @@
+import main
+import numpy
+import itertools
+import minimization_algo
+
+
+# simulates everything and keeps the last energy only
+
+def wavenumber(frequency):
+    omega = 2*numpy.pi*frequency
+    c = 343 # m/s
+    return omega/c   
+
+
+[minimization_algo.energy_omega, minimization_algo.energy_off_the_wall]
+iter = itertools.product()
+
+for args in iter:
+    print(args)
+    #launch_simulation(N, level, spacestep, wavenumber, Alpha, V_obj, mu, energy_method=minimization_algo.energy_omega) 
