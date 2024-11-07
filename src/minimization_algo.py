@@ -144,11 +144,11 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
         f_adj_dir = numpy.zeros((M, N), dtype=numpy.complex128)
         p = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f_adj, f_adj_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-        ene = compute_objective_function(domain_omega, u, spacestep)
+        ene = energy_omega(domain_omega, u, spacestep)
         energy.append(ene)
         print(f"{k} ème energie", ene)
         grad = numpy.real(Alpha * u * p)
-        print(f"{k} ème norme L2 du gradient", compute_objective_function(domain_omega, grad, spacestep))
+        print(f"{k} ème norme L2 du gradient", energy_omega(domain_omega, grad, spacestep))
         while ene >= energy[k] and mu > EPSILON0:
             new_chi = chi.copy()
             new_chi_grad = compute_gradient_descent(new_chi, grad, domain_omega, mu)
@@ -156,7 +156,7 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
             alpha_rob = Alpha * new_chi_grad_projected
             u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-            ene = compute_objective_function(domain_omega, u, spacestep)
+            ene = energy_omega(domain_omega, u, spacestep)
             if ene < energy[k]:
                 # The step is increased if the energy decreased
                 mu = mu * 1.1
@@ -185,7 +185,7 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
 
 
 
-def compute_objective_function(domain_omega, u, spacestep):
+def energy_omega(domain_omega, u, spacestep):
     """
     This function compute the objective function:
     J(u,domain_omega)= \int_{domain_omega}||u||^2 
@@ -207,3 +207,22 @@ def compute_objective_function(domain_omega, u, spacestep):
     u_line = numpy.reshape(u_masked, -1)
     energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
     return energy
+
+def energy_off_the_wall():
+	pass
+
+# testing energy computation
+domain = numpy.array([[_env.NODE_NEUMANN for _ in range(4)],
+		  [_env.NODE_INTERIOR for _ in range(4)],
+		  [_env.NODE_ROBIN, _env.NODE_ROBIN, _env.NODE_ROBIN, _env.NODE_ROBIN],
+		  [_env.NODE_COMPLEMENTARY for _ in range(4)]])
+
+u_real = numpy.random.rand(4,4)
+u_img = numpy.random.rand(4,4)
+u = u_real + 1j * u_img
+print(u)
+
+print(domain[1])
+u_1 = numpy.array(u[1], copy=True)
+print(numpy.sum(numpy.absolute(u_1**2)))
+print(energy_omega(domain_omega=domain, u=u, spacestep=1))

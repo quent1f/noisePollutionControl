@@ -65,9 +65,9 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
     
     #### Printing varialbes of interest
 
-    print("Energie de départ avec initial_chi:", minimization_algo.compute_objective_function(domain_omega, u_init, spacestep))
-    print("Energie finale avec chi dans [0, 1]: ", minimization_algo.compute_objective_function(domain_omega, u_final, spacestep))
-    print("Energie finale avec chi projeté dans {0,1}:", minimization_algo.compute_objective_function(domain_omega, u_final_projected, spacestep))
+    print("Energie de départ avec initial_chi:", minimization_algo.energy_omega(domain_omega, u_init, spacestep))
+    print("Energie finale avec chi dans [0, 1]: ", minimization_algo.energy_omega(domain_omega, u_final, spacestep))
+    print("Energie finale avec chi projeté dans {0,1}:", minimization_algo.energy_omega(domain_omega, u_final_projected, spacestep))
     
     print("Volume de chi dans [0,1]", computeVolume(chi_final, S))
     print("Volume de chi projeté dans {0,1}", computeVolume(chi_final_projected, S))
