@@ -34,7 +34,7 @@ def computeVolume(chi, S):
 def initialize_random_chi(M, N, x, y, V_obj):
     chi = numpy.zeros((M, N), dtype=numpy.float64)
     val = 1.0
-    random_list = random.sample(range(1, 2*N), int(N*V_obj))
+    random_list = random.sample(range(0, len(x)-1), int(N*V_obj))
     for k in random_list:
         chi[int(y[k]), int(x[k])] = val
     return chi
@@ -84,7 +84,7 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, V
                            Alpha, mu, initial_chi, V_obj, wavenumber, S)
     
     #### Printing varialbes of interest
-
+    
     print("Energie de départ avec initial_chi:", minimization_algo.compute_objective_function(domain_omega, u_init, spacestep))
     print("Energie finale avec chi dans [0, 1]: ", minimization_algo.compute_objective_function(domain_omega, u_final, spacestep))
     print("Energie finale avec chi projeté dans {0,1}:", minimization_algo.compute_objective_function(domain_omega, u_final_projected, spacestep))
@@ -120,17 +120,17 @@ if __name__ == '__main__':
 
     # -- set parameters of the partial differential equation
 
-    frequence = 1000
+    frequence = 440
     omega = 2*numpy.pi*frequence
     # c = 343 # m/s
     wavenumber = omega/CELERITY                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
 
     # material = 'Melamine'               # Matériau choisi 
 
-    V_obj = 0.5
+    V_obj = 0.8
     mu = 5
     # Alpha = 2.0 - 8.0 * 1j
-    # launch_simulation(N, level, spacestep, wavenumber, V_obj, mu)    
+    launch_simulation(N, level, spacestep, wavenumber, V_obj, mu, chi_init=0)    
 
     
 
@@ -139,12 +139,17 @@ if __name__ == '__main__':
     """
 
     """
-    V_obj_list = [0.02*i for i in range(1,3)]
-    liste_des_energies = [launch_simulation(N,level,spacestep,wavenumber,V_obj, mu)[-1] for V_obj in V_obj_list]
-
+    V_obj_list = [0.02*i for i in range(1,100)]
+    liste_energies_initiales = []
+    liste_energies_finales = []
+    for V_obj in V_obj_list:
+        energies = launch_simulation(N,level,spacestep,wavenumber,V_obj, mu) 
+        liste_energies_finales.append(energies[-1])
+        liste_energies_initiales.append(energies[0])
 
     matplotlib.pyplot.figure(figsize=(8, 5))
-    matplotlib.pyplot.plot(V_obj_list[:len(liste_des_energies)], liste_des_energies, marker='o', color='b', linestyle='-', linewidth=2, markersize=6)
+    matplotlib.pyplot.plot(V_obj_list[:len(liste_energies_finales)], liste_energies_finales, marker='o', color='b', linestyle='-', linewidth=2, markersize=3)
+    # matplotlib.pyplot.plot(V_obj_list[:len(liste_energies_finales)], liste_energies_initiales, marker='x', color='r', linestyle='-', linewidth=2, markersize=3)
 
     matplotlib.pyplot.xlabel("Densité de matériau (entre 0 et 1)", fontsize=12)
     matplotlib.pyplot.ylabel("Énergie minimale (après opti)", fontsize=12)
@@ -165,14 +170,22 @@ if __name__ == '__main__':
     """
 
     
-
-    freq_list = numpy.logspace(2, 3, 20)
+    """
+    freq_list = numpy.linspace(100, 1000, 100)
     omega_list = freq_list*2*numpy.pi
     wavenumber_list = omega_list/CELERITY
-    liste_energies_post_opti = [launch_simulation(N, level, spacestep, wavenumber, V_obj, mu)[-1] for wavenumber in wavenumber_list]
+
+    liste_energies_initiales = []
+    liste_energies_finales = []
+    for wavenumber in wavenumber_list:
+        energies = launch_simulation(N,level,spacestep,wavenumber,V_obj, mu) 
+        liste_energies_finales.append(energies[-1])
+        liste_energies_initiales.append(energies[0])
+
 
     matplotlib.pyplot.figure(figsize=(8, 5))
-    matplotlib.pyplot.plot(freq_list[:len(liste_energies_post_opti)], liste_energies_post_opti, marker='o', color='b', linestyle='-', linewidth=2, markersize=6)
+    matplotlib.pyplot.plot(freq_list[:len(liste_energies_finales)], liste_energies_finales, marker='o', color='b', linestyle='-', linewidth=2, markersize=3)
+    # matplotlib.pyplot.plot(freq_list[:len(liste_energies_finales)], liste_energies_initiales, marker='x', color='r', linestyle='-', linewidth=2, markersize=3)
 
     matplotlib.pyplot.xlabel("Fréquence de l'onde planaire en entrée", fontsize=12)
     matplotlib.pyplot.ylabel("Énergie minimale (après opti)", fontsize=12)
@@ -184,7 +197,23 @@ if __name__ == '__main__':
     # Afficher le graphique
     matplotlib.pyplot.savefig("energie_min_selon_frequence", dpi = 500)
 
+    """
 
+    """
+    3) Tentative :
+    Je vais essayer de lancer K fois l'algo avec un départ différent pour éviter de stuck dans un minimum local et voir ce que ca donne
+    """
 
+    """
+    liste_energies_initiales = []
+    liste_energies_finales = []
+    for _ in range(15):
+        energies = launch_simulation(N,level,spacestep,wavenumber,V_obj, mu, chi_init=1) 
+        liste_energies_finales.append(energies[-1])
+        liste_energies_initiales.append(energies[0])
 
-    
+ 
+    print(liste_energies_initiales)
+    print(liste_energies_finales)
+
+    """
