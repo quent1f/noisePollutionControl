@@ -361,7 +361,7 @@ def run():
 
     # Calculate alpha for each material
     colors = ["blue", "red", "green", "purple"]
-    numb_frequence = 1000  # Increased for smoother curves
+    numb_frequence = 1  # Increased for smoother curves
     frequences = numpy.linspace(2.0, 2000, num=numb_frequence)
     omegas = 2 * numpy.pi * frequences
 
