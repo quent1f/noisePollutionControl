@@ -63,7 +63,7 @@ def myimshow(tab, **kwargs):
         root, ext = os.path.splitext(output_file)
 
         # Sauvegarder l'image dans le dossier images_plots
-        matplotlib.pyplot.savefig(root + '_plot' + ext, format=ext[1:])
+        matplotlib.pyplot.savefig(root + '_plot' + ext, format=ext[1:], dpi = 500)
         # print(f"Graphique sauvegardé dans : {root + '_plot' + ext}")
         matplotlib.pyplot.close()
     else:

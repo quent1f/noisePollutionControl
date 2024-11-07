@@ -90,7 +90,7 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
 
 if __name__ == '__main__':
     # -- set parameters of the geometry
-    N = 50  # number of point2 along x-axis
+    N = 100  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
     level = 2 # level of the fractal
     spacestep = 1.0 / N  # mesh size
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     # -- set parameters of the partial differential equation
     wavenumber = 10.0                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
 
-    V_obj = 0.25
+    V_obj = 0.5
     mu = 5
     Alpha = 2.0 - 8.0 * 1j
     # Alpha = computeAlpha(...)
