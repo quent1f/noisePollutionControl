@@ -2,7 +2,7 @@
 
 
 # Python packages
-import matplotlib.pyplot
+import matplotlib.pyplot as plt
 import numpy
 import os
 
@@ -416,6 +416,8 @@ def surlignefractale(domain, color_domain, color_seed):
 
     return domain
 
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -454,3 +456,6 @@ def plot_chi_domain_with_wall(chi, domain_omega, wall_index, is_horizontal=True,
     plt.legend(loc="best")
     plt.grid(True)
     plt.show()
+
+
+
