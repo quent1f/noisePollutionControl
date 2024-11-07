@@ -29,12 +29,15 @@ class Memoize:
         return self.memo[args]
 
 
-def compute_alpha(omega, material_properties):
+def compute_alpha(omega, material_name):
     """
     .. warning: $w = 2 \pi f$
     w is called circular frequency
     f is called frequency
+    :param material:
     """
+    
+    material_properties = materials[material_name]
     # Use the material properties passed in instead of hardcoded values
     phi = material_properties["phi"]
     gamma_p = material_properties["gamma_p"]
@@ -358,8 +361,9 @@ def run():
 
     # Calculate alpha for each material
     colors = ["blue", "red", "green", "purple"]
-    numb_omega = 100  # Increased for smoother curves
-    omegas = numpy.linspace(2.0 * numpy.pi, numpy.pi * 10000, num=numb_omega)
+    numb_frequence = 1000  # Increased for smoother curves
+    frequences = numpy.linspace(2.0, 2000, num=numb_frequence)
+    omegas = 2 * numpy.pi * frequences
 
     # Create figures for real and imaginary parts
     fig_real = matplotlib.pyplot.figure(figsize=(10, 6))
@@ -376,18 +380,18 @@ def run():
         # Plot real part
         matplotlib.pyplot.figure(fig_real.number)
         matplotlib.pyplot.plot(
-            numpy.real(omegas), numpy.real(alphas), label=material_name
+            numpy.real(frequences), numpy.real(alphas), label=material_name
         )
 
         # Plot imaginary part
         matplotlib.pyplot.figure(fig_imag.number)
         matplotlib.pyplot.plot(
-            numpy.real(omegas), numpy.imag(alphas), label=material_name
+            numpy.real(frequences), numpy.imag(alphas), label=material_name
         )
 
     # Finalize real part plot
     matplotlib.pyplot.figure(fig_real.number)
-    matplotlib.pyplot.xlabel(r"$\omega$")
+    matplotlib.pyplot.xlabel(r"frequence")
     matplotlib.pyplot.ylabel(r"$\operatorname{Re}(\alpha)$")
     matplotlib.pyplot.legend()
     matplotlib.pyplot.grid(True)
@@ -395,7 +399,7 @@ def run():
 
     # Finalize imaginary part plot
     matplotlib.pyplot.figure(fig_imag.number)
-    matplotlib.pyplot.xlabel(r"$\omega$")
+    matplotlib.pyplot.xlabel(r"frequence")
     matplotlib.pyplot.ylabel(r"$\operatorname{Im}(\alpha)$")
     matplotlib.pyplot.legend()
     matplotlib.pyplot.grid(True)
@@ -408,3 +412,39 @@ def run():
 if __name__ == "__main__":
     run()
     print("End.")
+
+
+materials = {
+        "Wood": {
+            "phi": 0.5,
+            "gamma_p": 7.0 / 5.0,  # Keeping this constant for all materials
+            "sigma": 12500.0,
+            "rho_0": 600.0,
+            "alpha_h": 1.35,
+            "c_0": 360.0,
+        },
+        "Polyester": {
+            "phi": 0.9,
+            "gamma_p": 7.0 / 5.0,
+            "sigma": 20000.0,
+            "rho_0": 40.0,
+            "alpha_h": 1.2,
+            "c_0": 340.0,
+        },
+        "Melamine": {
+            "phi": 0.95,
+            "gamma_p": 7.0 / 5.0,
+            "sigma": 13000.0,
+            "rho_0": 10.0,
+            "alpha_h": 1.3,
+            "c_0": 340.0,
+        },
+        "Wool": {
+            "phi": 0.9,
+            "gamma_p": 7.0 / 5.0,
+            "sigma": 22500.0,
+            "rho_0": 100.0,
+            "alpha_h": 1.4,
+            "c_0": 340.0,
+        },
+    }
