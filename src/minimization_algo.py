@@ -135,20 +135,20 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
     energy = []
     while k < numb_iter and mu > EPSILON0:
         print('---- iteration number = ', k)
-        ######  On update les conditions aux bord de Robin (puisque l'on a changé chi)
+        ###### On update les conditions aux bord de Robin (puisque l'on a changé chi)
         alpha_rob = Alpha * chi
         u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-        ######  On souhaite résoudre le problème adjoint. On ajoute donc un terme source et on met la condition de dirichlet à 0 
-        f_adj = -2*u.conj()
+        ###### On souhaite résoudre le problème adjoint. On ajoute donc un terme source et on met la condition de dirichlet à 0 
+        f_adj = -2 * u.conj()
         f_adj_dir = numpy.zeros((M, N), dtype=numpy.complex128)
-        p = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f_adj, f_adj_dir, f_neu, f_rob,     # résolution de l'edp adjointe
+        p = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f_adj, f_adj_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-        ene = compute_objective_function(domain_omega, u, spacestep)                                            # Calcul de l'energie pour u 
+        ene = compute_objective_function(domain_omega, u, spacestep)
         energy.append(ene)
         print(f"{k} ème energie", ene)
-        grad = numpy.real(Alpha*u*p)
-        # postprocessing.myimshow(grad, title='gradient évalué en $\chi$', colorbar='colorbar', cmap='jet', vmin=-1, vmax=1, filename=f'fig_grad_{k}.jpg')
+        grad = numpy.real(Alpha * u * p)
+        print(f"{k} ème norme L2 du gradient", compute_objective_function(domain_omega, grad, spacestep))
         while ene >= energy[k] and mu > EPSILON0:
             new_chi = chi.copy()
             new_chi_grad = compute_gradient_descent(new_chi, grad, domain_omega, mu)
@@ -157,23 +157,32 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
             u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
             ene = compute_objective_function(domain_omega, u, spacestep)
-            if ene <  energy[k]:
+            if ene < energy[k]:
                 # The step is increased if the energy decreased
                 mu = mu * 1.1
                 chi = new_chi_grad_projected
             else:
-                # The step is decreased is the energy increased
+                # The step is decreased if the energy increased
                 mu = mu * 0.5
+
         k += 1
-    print('end. computing solution of Helmholtz problem, i.e., u')
+
+        # Sortie de la boucle si la variation d'énergie est inférieure à un seuil
+        if k > 1 and abs(ene - energy[k-1]) < 5*10**(-4):
+            print("Fin car X_k+1 trop proche de X_k")
+            break
+
+
     alpha_rob = Alpha * chi
     u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                 beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
     chi_projected = sorting_method(domain_omega, chi, V_obj, S)
     alpha_rob = Alpha * chi_projected
-    u_projected =  processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+    u_projected = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                 beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+    
     return chi, energy, u, grad, chi_projected, u_projected
+
 
 
 def compute_objective_function(domain_omega, u, spacestep):

@@ -5,6 +5,8 @@
 import matplotlib.pyplot
 import numpy
 import os
+import random
+
 
 
 # MRG packages
@@ -28,6 +30,17 @@ def computeSurface(domain_omega):
 def computeVolume(chi, S):
     return numpy.sum(chi)/S
 
+def initialize_random_chi(M, N, x, y, V_obj):
+    chi = numpy.zeros((M, N), dtype=numpy.float64)
+    val = 1.0
+    random_list = random.sample(range(1, 2*N), int(N*V_obj))
+    for k in random_list:
+        chi[int(y[k]), int(x[k])] = val
+    return chi
+
+
+
+
 def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, Alpha: complex, V_obj: float, mu: float):        # penser à ajouter un moyen de faire un initial chi différent
     """
     Lance la simulation et renvoie les plots interessants
@@ -47,6 +60,7 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
     #####
     S = computeSurface(domain_omega)
     
+    # initial_chi = initialize_random_chi(M, N, x, y, V_obj)
     initial_chi = preprocessing._set_chi(M, N, x, y)
     preprocessing.set2zero(initial_chi, domain_omega)
 
@@ -83,6 +97,7 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
     postprocessing._plot_energy_history(energy)
 
     print('End.')
+    return energy
 
 
 
@@ -92,20 +107,52 @@ if __name__ == '__main__':
     # -- set parameters of the geometry
     N = 50  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 2 # level of the fractal
+    level = 1 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
     # -- set parameters of the partial differential equation
     wavenumber = 10.0                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
 
-    V_obj = 0.25
+    # V_obj = 0.9
     mu = 5
     Alpha = 2.0 - 8.0 * 1j
     # Alpha = computeAlpha(...)
 
-    # initial_chi = preprocessing._set_chi(M, N, x, y)
+    # launch_simulation(N, level, spacestep, wavenumber, Alpha, V_obj, mu)    
 
-    launch_simulation(N, level, spacestep, wavenumber, Alpha, V_obj, mu)    
+
+    """
+
+    Permet de tracer l'énergie APRES optimisation en fonction de la densité de matériau. 
+
+    V_obj_list = [0.05*i for i in range(1,19)]
+    liste_des_energies = [launch_simulation(N,level,spacestep,wavenumber,Alpha,V_obj, mu)[-1] for V_obj in V_obj_list]
+
+
+    matplotlib.pyplot.figure(figsize=(8, 5))
+    matplotlib.pyplot.plot(V_obj_list[:len(liste_des_energies)], liste_des_energies, marker='o', color='b', linestyle='-', linewidth=2, markersize=6)
+
+    matplotlib.pyplot.xlabel("Densité de matériau (entre 0 et 1)", fontsize=12)
+    matplotlib.pyplot.ylabel("Énergie", fontsize=12)
+    matplotlib.pyplot.title("Évolution de l'énergie en fonction de la densité de matériau", fontsize=14)
+
+    matplotlib.pyplot.grid(True, linestyle='--', alpha=0.7)
+    matplotlib.pyplot.xlim(0, 1)
+
+    # Afficher le graphique
+    matplotlib.pyplot.savefig("energie_selon_densité", dpi = 500)
+
+    """
+
+
+    """
+
+
+
+    
+    """
+
+
 
 
 
