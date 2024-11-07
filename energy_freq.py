@@ -66,7 +66,7 @@ f, f_dir, f_neu, f_rob = preprocessing._set_rhs_of_pde(M, N)
 f_dir[:, :] = 0.0 # !!!!!
 f_dir[0, 0:N] = 1.0 # !!!!!!
 chi = preprocessing._set_chi(M, N, x, y)
-# chi[:,:] = 1 , enlever # pour fully absorbant
+chi[:,:] = 1 #, enlever # pour fully absorbant
 chi = preprocessing.set2zero(chi, domain_omega)
 print(chi[50]) 
 
@@ -75,10 +75,10 @@ def compute_objective_function(wavenumber):
 
     omega =  sound_speed * wavenumber
 
-    computation = compute_alpha.compute_alpha(omega, material_properties) # mettre # ici pour fully absorbant
-    # Alpha = - wavenumber * 1j 
+    # computation = compute_alpha.compute_alpha(omega, material_properties) # mettre # ici pour fully absorbant
+    Alpha = - wavenumber * 1j 
     # enlevez le # ici pour fully absorbant
-    Alpha = computation[0] # mettre # ici pour fully absorbant
+    # Alpha = computation[0] # mettre # ici pour fully absorbant
     alpha_rob = Alpha * chi
 
     u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
@@ -104,10 +104,10 @@ def fractal_shape(wavenumber) :
     
     omega =  sound_speed * wavenumber
 
-    computation = compute_alpha.compute_alpha(omega, material_properties) # mettre # ici pour fully absorbant
-    # Alpha = - wavenumber * 1j 
+    # computation = compute_alpha.compute_alpha(omega, material_properties) # mettre # ici pour fully absorbant
+    Alpha = - wavenumber * 1j 
     # enlevez le # ici pour fully absorbant
-    Alpha = computation[0] # mettre # ici pour fully absorbant 
+    # Alpha = computation[0] # mettre # ici pour fully absorbant 
     alpha_rob = Alpha * chi  
 
     # -- set parameters for optimization
@@ -149,23 +149,23 @@ def fractal_shape(wavenumber) :
     
 
 
-start_freq = 100  # Starting frequency (Hz)
-end_freq = 1501   # Ending frequency (Hz)
-num_points = 300  # Number of points for a smooth curve
+# start_freq = 100  # Starting frequency (Hz)
+# end_freq = 1501   # Ending frequency (Hz)
+# num_points = 300  # Number of points for a smooth curve
 
-filtered_freq = np.linspace(start_freq, end_freq, num_points)
+# filtered_freq = np.linspace(start_freq, end_freq, num_points)
 
 # Compute energy values for level 0
 
-level = 0
-domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
-beta_pde, alpha_pde, alpha_dir, beta_neu, alpha_rob, beta_rob = preprocessing._set_coefficients_of_pde(M, N)
-f, f_dir, f_neu, f_rob = preprocessing._set_rhs_of_pde(M, N)
-f_dir[:, :] = 0.0 # !!!!!
-f_dir[0, 0:N] = 1.0 # !!!!!!
-energy_values_level_0 = [np.log10(compute_objective_function((2 * pi * freq) / sound_speed)) for freq in filtered_freq]
+# level = 0
+# domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
+# beta_pde, alpha_pde, alpha_dir, beta_neu, alpha_rob, beta_rob = preprocessing._set_coefficients_of_pde(M, N)
+# f, f_dir, f_neu, f_rob = preprocessing._set_rhs_of_pde(M, N)
+# f_dir[:, :] = 0.0 # !!!!!
+# f_dir[0, 0:N] = 1.0 # !!!!!!
+# energy_values_level_0 = [np.log10(compute_objective_function((2 * pi * freq) / sound_speed)) for freq in filtered_freq]
 
-# ICI, enlevez les # en bas pour fully absorbant
+# # ICI, enlevez les # en bas pour fully absorbant
 
 # level = 1
 # domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
@@ -184,18 +184,25 @@ energy_values_level_0 = [np.log10(compute_objective_function((2 * pi * freq) / s
 # energy_values_level_2 = [np.log10(compute_objective_function((2 * pi * freq) / sound_speed)) for freq in filtered_freq]
 
 
+# level = 0
+# domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
+# beta_pde, alpha_pde, alpha_dir, beta_neu, alpha_rob, beta_rob = preprocessing._set_coefficients_of_pde(M, N)
+# f, f_dir, f_neu, f_rob = preprocessing._set_rhs_of_pde(M, N)
+# f_dir[:, :] = 0.0 # !!!!!
+# f_dir[0, 0:N] = 1.0 # !!!!!!
 
-# Plot frequencies vs. energies for both levels
-plt.figure(figsize=(12, 6))
-plt.plot(filtered_freq, energy_values_level_0, label='Level 0', linewidth=2, marker='o')
+
+# # Plot frequencies vs. energies for both levels
+# plt.figure(figsize=(12, 6))
+# plt.plot(filtered_freq, energy_values_level_0, label='Level 0', linewidth=2, marker='o')
 # plt.plot(filtered_freq, energy_values_level_1, label='Level 1', linewidth=2, marker='o')
 # plt.plot(filtered_freq, energy_values_level_2, label='Level 2', linewidth=2, marker='o')
-plt.xlabel("Frequency (Hz)")
-plt.ylabel("Energy")
-plt.title("Energy in function of Frequency for porous on reflective")   
-plt.legend()
-plt.grid(True)
-plt.show()
+# plt.xlabel("Frequency (Hz)")
+# plt.ylabel("Energy")
+# plt.title("Energy in function of Frequency for porous on reflective")   
+# plt.legend()
+# plt.grid(True)
+# plt.show()
 
 # Enlevez le # ici si vous voulez afficher les cartes thermiques du u0 et chi0, mettre un wavenumber qui maximise l'énergie par exemple à la place de " ... "
 freq = 420
