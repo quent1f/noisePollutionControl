@@ -41,7 +41,7 @@ def initialize_random_chi(M, N, x, y, V_obj):
 
 
 
-def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, Alpha: complex, V_obj: float, mu: float):        # penser à ajouter un moyen de faire un initial chi différent
+def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, Alpha: complex, V_obj: float, mu: float, energy_method=minimization_algo.energy_omega):        # penser à ajouter un moyen de faire un initial chi différent
     """
     Lance la simulation et renvoie les plots interessants
     initial_chi : chi de départ pour la minimisation
@@ -75,13 +75,13 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
 
     chi_final, energy, u_final, grad, chi_final_projected, u_final_projected = minimization_algo.optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-                           Alpha, mu, initial_chi, V_obj, wavenumber, S)
+                           Alpha, mu, initial_chi, V_obj, wavenumber, S, energy_method=energy_method)
     
     #### Printing varialbes of interest
 
-    print("Energie de départ avec initial_chi:", minimization_algo.energy_omega(domain_omega, u_init, spacestep))
-    print("Energie finale avec chi dans [0, 1]: ", minimization_algo.energy_omega(domain_omega, u_final, spacestep))
-    print("Energie finale avec chi projeté dans {0,1}:", minimization_algo.energy_omega(domain_omega, u_final_projected, spacestep))
+    print("Energie de départ avec initial_chi:", energy_method(domain_omega, u_init, spacestep))
+    print("Energie finale avec chi dans [0, 1]: ", energy_method(domain_omega, u_final, spacestep))
+    print("Energie finale avec chi projeté dans {0,1}:", energy_method(domain_omega, u_final_projected, spacestep))
     
     print("Volume de chi dans [0,1]", computeVolume(chi_final, S))
     print("Volume de chi projeté dans {0,1}", computeVolume(chi_final_projected, S))
@@ -105,20 +105,20 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
 
 if __name__ == '__main__':
     # -- set parameters of the geometry
-    N = 50  # number of point2 along x-axis
+    N = 100  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 1 # level of the fractal
+    level = 2 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
     # -- set parameters of the partial differential equation
     wavenumber = 10.0                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
 
-    # V_obj = 0.9
+    V_obj = 0.6
     mu = 5
     Alpha = 2.0 - 8.0 * 1j
     # Alpha = computeAlpha(...)
 
-    # launch_simulation(N, level, spacestep, wavenumber, Alpha, V_obj, mu)    
+    launch_simulation(N, level, spacestep, wavenumber, Alpha, V_obj, mu, energy_method=minimization_algo.energy_off_the_wall)    
 
 
     """

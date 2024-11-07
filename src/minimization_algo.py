@@ -115,11 +115,64 @@ def sorting_method(domain, chi, V_obj, S):
 
     return chi_proj
 
+def energy_omega(domain_omega, u, spacestep):
+    """
+    This function compute the objective function:
+    J(u,domain_omega)= \int_{domain_omega}||u||^2 
+
+    Parameter:
+        domain_omega: Matrix (NxP), it defines the domain and the shape of the
+        Robin frontier;
+        u: Matrix (NxP), it is the solution of the Helmholtz problem, we are
+        computing its energy;
+        spacestep: float, it corresponds to the step used to solve the Helmholtz
+        equation.
+    """
+    # every element has the same size : spacestep^2
+    coordinates_to_mask = numpy.argwhere(domain_omega != _env.NODE_INTERIOR)
+    u = numpy.array(u, copy=True)
+    mask = numpy.zeros(u.shape, dtype=bool)
+    mask[coordinates_to_mask[:,0], coordinates_to_mask[:,1]] = True
+    u_masked = numpy.ma.array(data=u, mask=mask)
+    u_line = numpy.reshape(u_masked, -1)
+    energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
+    return energy
+
+def energy_off_the_wall(domain, u, spacestep):
+    """energy_off_the_wall
+
+    Args:
+        domain (np.array): Matrix (NxP), it defines the domain and the shape of the
+        Robin frontier;
+        u: Matrix (NxP), it is the solution of the Helmholtz problem, we are
+        computing its energy;
+        spacestep: float, it corresponds to the step used to solve the Helmholtz
+        equation.
+
+    Returns:
+        energy: énergie dans la pièce
+    """
+	# en plus de masquer les noeuds non-intérieurs, on masque les noeuds intérieurs "dans la fractale"
+    coordinates_to_mask = numpy.argwhere(domain != _env.NODE_INTERIOR)
+    u = numpy.array(u, copy=True)
+    mask = numpy.zeros(u.shape, dtype=bool)
+    mask[coordinates_to_mask[:,0], coordinates_to_mask[:,1]] = True
+	
+	# let's find the highest(minimum index) row where a node is _env.NODE_ROBIN
+    coordinates_robin = numpy.argwhere(domain == _env.NODE_ROBIN)
+    robins_rows = coordinates_robin[:,0]
+    min_robin_row = numpy.min(robins_rows)
+    mask[min_robin_row:, :] = True # all rows min_robin_row are masked
+	
+    u_masked = numpy.ma.array(data=u, mask=mask)
+    u_line = numpy.reshape(u_masked, -1)
+    energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
+    return energy
 
 # Attention :  j'ai enlevé omega (la fréquence) dans les paramètres (pour le moment je ne vois pas en quoi cela influe sur notre methode d'optimisation)
 def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-                           Alpha, mu, chi, V_obj, wavenumber, S):
+                           Alpha, mu, chi, V_obj, wavenumber, S, energy_method=energy_omega):
     """This function return the optimized density.
 
     Parameter:
@@ -144,11 +197,11 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
         f_adj_dir = numpy.zeros((M, N), dtype=numpy.complex128)
         p = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f_adj, f_adj_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-        ene = energy_omega(domain_omega, u, spacestep)
+        ene = energy_method(domain_omega, u, spacestep)
         energy.append(ene)
         print(f"{k} ème energie", ene)
         grad = numpy.real(Alpha * u * p)
-        print(f"{k} ème norme L2 du gradient", energy_omega(domain_omega, grad, spacestep))
+        print(f"{k} ème norme L2 du gradient", energy_method(domain_omega, grad, spacestep))
         while ene >= energy[k] and mu > EPSILON0:
             new_chi = chi.copy()
             new_chi_grad = compute_gradient_descent(new_chi, grad, domain_omega, mu)
@@ -156,7 +209,7 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
             alpha_rob = Alpha * new_chi_grad_projected
             u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-            ene = energy_omega(domain_omega, u, spacestep)
+            ene = energy_method(domain_omega, u, spacestep)
             if ene < energy[k]:
                 # The step is increased if the energy decreased
                 mu = mu * 1.1
@@ -182,47 +235,3 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                 beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
     
     return chi, energy, u, grad, chi_projected, u_projected
-
-
-
-def energy_omega(domain_omega, u, spacestep):
-    """
-    This function compute the objective function:
-    J(u,domain_omega)= \int_{domain_omega}||u||^2 
-
-    Parameter:
-        domain_omega: Matrix (NxP), it defines the domain and the shape of the
-        Robin frontier;
-        u: Matrix (NxP), it is the solution of the Helmholtz problem, we are
-        computing its energy;
-        spacestep: float, it corresponds to the step used to solve the Helmholtz
-        equation.
-    """
-    # every element has the same size : spacestep^2
-    coordinates_to_mask = numpy.argwhere(domain_omega != _env.NODE_INTERIOR)
-    u = numpy.array(u, copy=True)
-    mask = numpy.zeros(u.shape, dtype=bool)
-    mask[coordinates_to_mask[:,0], coordinates_to_mask[:,1]] = True
-    u_masked = numpy.ma.array(data=u, mask=mask)
-    u_line = numpy.reshape(u_masked, -1)
-    energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
-    return energy
-
-def energy_off_the_wall():
-	pass
-
-# testing energy computation
-domain = numpy.array([[_env.NODE_NEUMANN for _ in range(4)],
-		  [_env.NODE_INTERIOR for _ in range(4)],
-		  [_env.NODE_ROBIN, _env.NODE_ROBIN, _env.NODE_ROBIN, _env.NODE_ROBIN],
-		  [_env.NODE_COMPLEMENTARY for _ in range(4)]])
-
-u_real = numpy.random.rand(4,4)
-u_img = numpy.random.rand(4,4)
-u = u_real + 1j * u_img
-print(u)
-
-print(domain[1])
-u_1 = numpy.array(u[1], copy=True)
-print(numpy.sum(numpy.absolute(u_1**2)))
-print(energy_omega(domain_omega=domain, u=u, spacestep=1))
