@@ -68,11 +68,11 @@ def compute_alpha(omega, material_name):
     ksi_volume = phi * gamma_p / (c_0**2)
     a_volume = sigma * (phi**2) * gamma_p / ((c_0**2) * rho_0 * alpha_h)
     mu_volume = phi / alpha_h
-    k2_volume = (
-        (1.0 / mu_volume)
-        * ((omega**2) / (c_0**2))
-        * (ksi_volume + 1j * a_volume / omega)
-    )
+    # k2_volume = (
+    #     (1.0 / mu_volume)
+    #     * ((omega**2) / (c_0**2))
+    #     * (ksi_volume + 1j * a_volume / omega)
+    # )
     # print(k2_volume)
 
     # parameters of the objective function

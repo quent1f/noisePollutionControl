@@ -18,6 +18,7 @@ import minimization_algo
 import compute_alpha
 #import solutions
 
+CELERITY = 343 # célérité du son 
 
 def computeSurface(domain_omega):
     S = 0  # surface of the fractal
@@ -40,7 +41,7 @@ def initialize_random_chi(M, N, x, y, V_obj):
 
 
 
-def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, Alpha: complex, V_obj: float, mu: float, chi_init: int):        # penser à ajouter un moyen de faire un initial chi différent
+def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, V_obj: float, mu: float, chi_init=0):        # penser à ajouter un moyen de faire un initial chi différent
     """
     Lance la simulation et renvoie les plots interessants
     initial_chi : chi de départ pour la minimisation
@@ -67,7 +68,10 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
     preprocessing.set2zero(initial_chi, domain_omega)
 
     #### Computing alpha
-    #Alpha = compute_alpha.compute_alpha(...)
+    omega = CELERITY*wavenumber
+    Alpha = compute_alpha.compute_alpha(omega, 'Melamine')[0]
+    print("Alpha après calcul", Alpha, "Fréquence", omega/(2*numpy.pi), "Omega", omega, "Nombre d'onde", wavenumber)
+
     #### Initial Solving 
     alpha_rob = Alpha * initial_chi
     u_init = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
@@ -116,27 +120,25 @@ if __name__ == '__main__':
 
     # -- set parameters of the partial differential equation
 
-    frequence = 1000
-    omega = 2*numpy.pi*frequence
-    c = 343 # m/s
-    wavenumber = omega/c                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
+    # frequence = 1000
+    # omega = 2*numpy.pi*frequence
+    # # c = 343 # m/s
+    # wavenumber = omega/CELERITY                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
 
-    material = 'Melamine'               # Matériau choisi 
+    # material = 'Melamine'               # Matériau choisi 
 
-    V_obj = 0.9
+    V_obj = 0.5
     mu = 5
     # Alpha = 2.0 - 8.0 * 1j
-    Alpha = compute_alpha.compute_alpha(omega, material)[0]
-    print("Alpha après calcul", Alpha, "Fréquence", frequence, "Omega", omega, "Nombre d'onde", wavenumber)
-    launch_simulation(N, level, spacestep, wavenumber, Alpha, V_obj, mu)    
+    # launch_simulation(N, level, spacestep, wavenumber, V_obj, mu)    
 
-
+    
 
     """
     1) Tracer l'énergie APRES optimisation en fonction de la densité de matériau. 
     """
     """
-   V_obj_list = [0.02*i for i in range(1,50)]
+    V_obj_list = [0.02*i for i in range(1,50)]
     liste_des_energies = [launch_simulation(N,level,spacestep,wavenumber,Alpha,V_obj, mu)[-1] for V_obj in V_obj_list]
 
 
@@ -156,8 +158,27 @@ if __name__ == '__main__':
     """
 
 
+    """
+    2) Tracer l'énergie POST optimisation en fonction de la fréquence de l'onde 
+    """
 
+    freq_list = numpy.logspace(2, 3, 20)
+    omega_list = freq_list*2*numpy.pi
+    wavenumber_list = omega_list/CELERITY
+    liste_energies_post_opti = [launch_simulation(N, level, spacestep, wavenumber, V_obj, mu) for wavenumber in wavenumber_list]
 
+    matplotlib.pyplot.figure(figsize=(8, 5))
+    matplotlib.pyplot.plot(freq_list, liste_energies_post_opti, marker='o', color='b', linestyle='-', linewidth=2, markersize=6)
+
+    matplotlib.pyplot.xlabel("Fréquence de l'onde planaire en entrée", fontsize=12)
+    matplotlib.pyplot.ylabel("Énergie minimale (après opti)", fontsize=12)
+    matplotlib.pyplot.title("Évolution de l'énergie après optimisation en fonction de la fréquence en entrée" , fontsize=14)
+
+    matplotlib.pyplot.grid(True, linestyle='--', alpha=0.7)
+    matplotlib.pyplot.xlim(0, 1000)
+
+    # Afficher le graphique
+    matplotlib.pyplot.savefig("energie_min_selon_frequence", dpi = 500)
 
 
 
