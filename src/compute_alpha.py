@@ -29,12 +29,13 @@ class Memoize:
         return self.memo[args]
 
 
-def compute_alpha(omega, material_properties):
+def compute_alpha(omega, material_name):
     """
     .. warning: $w = 2 \pi f$
     w is called circular frequency
     f is called frequency
     """
+    material_properties = materials[material_name]
     # Use the material properties passed in instead of hardcoded values
     phi = material_properties["phi"]
     gamma_p = material_properties["gamma_p"]
@@ -72,7 +73,7 @@ def compute_alpha(omega, material_properties):
         * ((omega**2) / (c_0**2))
         * (ksi_volume + 1j * a_volume / omega)
     )
-    print(k2_volume)
+    # print(k2_volume)
 
     # parameters of the objective function
     A = 1.0
@@ -408,3 +409,38 @@ def run():
 if __name__ == "__main__":
     run()
     print("End.")
+
+materials = {
+        "Wood": {
+            "phi": 0.5,
+            "gamma_p": 7.0 / 5.0,  # Keeping this constant for all materials
+            "sigma": 12500.0,
+            "rho_0": 600.0,
+            "alpha_h": 1.35,
+            "c_0": 360.0,
+        },
+        "Polyester": {
+            "phi": 0.9,
+            "gamma_p": 7.0 / 5.0,
+            "sigma": 20000.0,
+            "rho_0": 40.0,
+            "alpha_h": 1.2,
+            "c_0": 340.0,
+        },
+        "Melamine": {
+            "phi": 0.95,
+            "gamma_p": 7.0 / 5.0,
+            "sigma": 13000.0,
+            "rho_0": 10.0,
+            "alpha_h": 1.3,
+            "c_0": 340.0,
+        },
+        "Wool": {
+            "phi": 0.9,
+            "gamma_p": 7.0 / 5.0,
+            "sigma": 22500.0,
+            "rho_0": 100.0,
+            "alpha_h": 1.4,
+            "c_0": 340.0,
+        },
+    }
