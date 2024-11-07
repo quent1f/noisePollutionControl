@@ -39,8 +39,8 @@ def replace_old_by_new(u, oldvalue, newvalue):
                 u[i, j] = newvalue
     return u
 
-
-def _set_coefficients_of_pde(M, N):
+# Une modif peut-être fausse.
+def _set_coefficients_of_pde(M, N):   
     beta_pde = numpy.ones((M, N), dtype=numpy.complex128)
     alpha_pde = numpy.ones((M, N), dtype=numpy.complex128)
     alpha_dir = numpy.ones((M, N), dtype=numpy.complex128)

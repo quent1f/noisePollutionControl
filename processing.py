@@ -347,7 +347,7 @@ def solve_helmholtz(domain, space_step, omega,
     rhs = rhs_temp
     # -- create mass matrix
     mat_temp, rhs_temp = compute_mass_matrix(domain, space_step, alpha_pde)
-    mat = mat + omega ** 2 * mat_temp
+    mat = mat + omega ** 2 * mat_temp   
     rhs = rhs
     # -- create convection (vgradu) matrix
     # <!--

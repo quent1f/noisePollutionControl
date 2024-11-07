@@ -128,10 +128,11 @@ def launch_experience(wavenumber = 10.0, incident_wave_energy = 1.0, optimize = 
     # -- define material density matrix
     chi = preprocessing._set_chi(M, N, x, y)
     chi = preprocessing.set2zero(chi, domain_omega)
+    chi[:] = 1.0
 
-    # -- define absorbing material
-    Alpha = 10.0 - 10.0 * 1j
-    # Alpha = 0 - 0 * 1j
+    # -- define absorbing material # rq : alpha est une fonction de omega ! En 1ère approx, wavenumber - wavenumber * j
+    # Alpha = wavenumber - wavenumber * 1j
+    Alpha = - wavenumber * 1j
     # -- this is the function you have written during your project
     #import compute_alpha
     #Alpha = compute_alpha.compute_alpha(...)
@@ -173,7 +174,7 @@ def launch_experience(wavenumber = 10.0, incident_wave_energy = 1.0, optimize = 
         chin = chi.copy()
         un = u.copy()
 
-    if display:
+    if display==True:
         # -- plot chi, u, and energy
         postprocessing.plot_domain(domain_omega)
         postprocessing._plot_uncontroled_solution(u0, chi0, alpha_rob)
@@ -183,8 +184,13 @@ def launch_experience(wavenumber = 10.0, incident_wave_energy = 1.0, optimize = 
         postprocessing._plot_energy_history(energy)
 
     energy = your_compute_objective_function(domain_omega, u0, spacestep)
+    print(f'alpha_pde = {alpha_pde[1,1]}, beta_pde = {beta_pde[1,1]}')
+    print(f'alpha_dir = {alpha_dir[0,1]}, {alpha_dir[1,1]}')
+    print(f'beta_neu = {beta_neu[5,0]}, {beta_neu[1,1]}')
+    print(f'alpha_rob = {alpha_rob[N,1]}, {alpha_rob[1,1]}')
+    print(f'beta_rob = {beta_rob[N,1]}, {beta_rob[1,1]}')
     return energy
 
 if __name__ == '__main__':
-    launch_experience()
-    
+    launch_experience(wavenumber = 5, display=True)
+        

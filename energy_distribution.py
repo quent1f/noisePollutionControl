@@ -21,18 +21,22 @@ def get_sound_tested():
 
 def get_energies_frequency_plage(plage):
     '''
-    Calculate the system energy, without optimization, for all the frequencies of the plage.
+    Calculate the system energy, without optimization, for all the wavenumbers of the plage.
     
     :param plage: numpy.array([[wavenumber, inciding_wave_power/energy], [], ...], type=float)
     :return energies: numpy.array([[wavenumber, system_energy], [], ...], type=float)
     '''
     energies = []
+    c = 343 # speed of sound in the field (air for now)
     for i in range(len(plage)):
-        energy = demo_control_polycopie2024.launch_experience(wavenumber=plage[i][0], incident_wave_energy=plage[i][1], optimize=False)
+        print(i)
+        frequency = plage[i][0]
+        wavenumber = ( 2 * numpy.pi / c ) * frequency
+        energy = demo_control_polycopie2024.launch_experience(wavenumber=wavenumber, incident_wave_energy=plage[i][1], optimize=False)
         energies.append([energy,plage[i][0]])
-    print(energies)
+        
     energies = numpy.array(energies)
-    print(energies)
+    
     return energies
 
 def plot_energy_distribution(energies):
@@ -53,6 +57,12 @@ def plot_energy_distribution(energies):
     matplotlib.pyplot.close()
     
 if __name__ == '__main__':
-    plage_test_1 = numpy.array([[10**(k), 1] for k in range(-3,4)])
+    plage_frequencies_test = numpy.arange(20,1700,5)
+    plage_test_1 = []
+    for i in range(len(plage_frequencies_test)):
+        plage_test_1.append([plage_frequencies_test[i], 1])
+    plage_test_1 = numpy.array(plage_test_1)
+    print(plage_test_1)
+    
     energies = get_energies_frequency_plage(plage_test_1)
     plot_energy_distribution(energies)
