@@ -40,13 +40,13 @@ def initialize_random_chi(M, N, x, y, V_obj):
 
 
 
-
-def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, Alpha: complex, V_obj: float, mu: float):        # penser à ajouter un moyen de faire un initial chi différent
+def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, Alpha: complex, V_obj: float, mu: float, chi_init: int):        # penser à ajouter un moyen de faire un initial chi différent
     """
     Lance la simulation et renvoie les plots interessants
     initial_chi : chi de départ pour la minimisation
     V_obj : pourcentage du volume occupé par le matériau
     mu : initial learning rate 
+    chi_init : entier, si = 0 alors initialisation "classique" avec _set_chi, sinon, random initialisation 
     """
     ##### initialize pde domain
     beta_pde, alpha_pde, alpha_dir, beta_neu, alpha_rob, beta_rob = preprocessing._set_coefficients_of_pde(M, N)
@@ -60,8 +60,10 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, A
     #####
     S = computeSurface(domain_omega)
     
-    # initial_chi = initialize_random_chi(M, N, x, y, V_obj)
-    initial_chi = preprocessing._set_chi(M, N, x, y)
+    if chi_init == 0:
+        initial_chi = preprocessing._set_chi(M, N, x, y)
+    else:
+        initial_chi = initialize_random_chi(M, N, x, y, V_obj)
     preprocessing.set2zero(initial_chi, domain_omega)
 
     #### Computing alpha
@@ -152,6 +154,9 @@ if __name__ == '__main__':
     matplotlib.pyplot.savefig("energie_min_selon_densité", dpi = 500)
 
     """
+
+
+
 
 
 
