@@ -192,11 +192,11 @@ plt.plot(filtered_freq, energy_values_level_0, label='Level 0', linewidth=2, mar
 # plt.plot(filtered_freq, energy_values_level_2, label='Level 2', linewidth=2, marker='o')
 plt.xlabel("Frequency (Hz)")
 plt.ylabel("Energy")
-plt.title("Energy in function of Frequency for porous on reflective")
+plt.title("Energy in function of Frequency for porous on reflective")   
 plt.legend()
 plt.grid(True)
 plt.show()
 
 # Enlevez le # ici si vous voulez afficher les cartes thermiques du u0 et chi0, mettre un wavenumber qui maximise l'énergie par exemple à la place de " ... "
-
-# fractal_shape(...) 
+freq = 420
+fractal_shape(2*pi*freq/(sound_speed)) 
