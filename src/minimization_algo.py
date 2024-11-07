@@ -168,7 +168,7 @@ def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
         k += 1
 
         # Sortie de la boucle si la variation d'énergie est inférieure à un seuil
-        if k > 1 and abs(ene - energy[k-1]) < 5*10**(-4):
+        if k > 1 and abs(ene - energy[k-1]) < 10**(-3):
             print("Fin car X_k+1 trop proche de X_k")
             break
 

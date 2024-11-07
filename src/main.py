@@ -120,10 +120,10 @@ if __name__ == '__main__':
 
     # -- set parameters of the partial differential equation
 
-    # frequence = 1000
-    # omega = 2*numpy.pi*frequence
-    # # c = 343 # m/s
-    # wavenumber = omega/CELERITY                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
+    frequence = 1000
+    omega = 2*numpy.pi*frequence
+    # c = 343 # m/s
+    wavenumber = omega/CELERITY                        # fréquence f = 200 environ donc w = 2*pi*f = 1200 et k = w/c avec c = 340m/s
 
     # material = 'Melamine'               # Matériau choisi 
 
@@ -137,9 +137,10 @@ if __name__ == '__main__':
     """
     1) Tracer l'énergie APRES optimisation en fonction de la densité de matériau. 
     """
+
     """
-    V_obj_list = [0.02*i for i in range(1,50)]
-    liste_des_energies = [launch_simulation(N,level,spacestep,wavenumber,Alpha,V_obj, mu)[-1] for V_obj in V_obj_list]
+    V_obj_list = [0.02*i for i in range(1,3)]
+    liste_des_energies = [launch_simulation(N,level,spacestep,wavenumber,V_obj, mu)[-1] for V_obj in V_obj_list]
 
 
     matplotlib.pyplot.figure(figsize=(8, 5))
@@ -155,6 +156,7 @@ if __name__ == '__main__':
     # Afficher le graphique
     matplotlib.pyplot.savefig("energie_min_selon_densité", dpi = 500)
 
+
     """
 
 
@@ -162,13 +164,15 @@ if __name__ == '__main__':
     2) Tracer l'énergie POST optimisation en fonction de la fréquence de l'onde 
     """
 
+    
+
     freq_list = numpy.logspace(2, 3, 20)
     omega_list = freq_list*2*numpy.pi
     wavenumber_list = omega_list/CELERITY
-    liste_energies_post_opti = [launch_simulation(N, level, spacestep, wavenumber, V_obj, mu) for wavenumber in wavenumber_list]
+    liste_energies_post_opti = [launch_simulation(N, level, spacestep, wavenumber, V_obj, mu)[-1] for wavenumber in wavenumber_list]
 
     matplotlib.pyplot.figure(figsize=(8, 5))
-    matplotlib.pyplot.plot(freq_list, liste_energies_post_opti, marker='o', color='b', linestyle='-', linewidth=2, markersize=6)
+    matplotlib.pyplot.plot(freq_list[:len(liste_energies_post_opti)], liste_energies_post_opti, marker='o', color='b', linestyle='-', linewidth=2, markersize=6)
 
     matplotlib.pyplot.xlabel("Fréquence de l'onde planaire en entrée", fontsize=12)
     matplotlib.pyplot.ylabel("Énergie minimale (après opti)", fontsize=12)
