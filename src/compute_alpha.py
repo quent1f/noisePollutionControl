@@ -217,7 +217,7 @@ def compute_alpha(omega, material_properties):
                 tol=1e-4,
             ).x
         )
-        print(temp, "------", "je suis temp")
+        # print(temp, "------", "je suis temp")
         return temp
 
     @Memoize
