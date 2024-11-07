@@ -269,9 +269,9 @@ if __name__ == '__main__':
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
     # -- set parameters of the geometry
-    N = 50  # number of point2 along x-axis
+    N = 200  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 2 # level of the fractal
+    level = 4 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
     # -- set parameters of the partial differential equation
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     chi = preprocessing.set2zero(chi, domain_omega)
     
     # -- define absorbing material
-    Alpha = 10.0 - 10.0 * 1j
+    Alpha = 2.0 - 8.0 * 1j
 
     # -- this is the function you have written during your project
     #import compute_alpha
