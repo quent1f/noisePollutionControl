@@ -359,7 +359,7 @@ def run():
     # Calculate alpha for each material
     colors = ["blue", "red", "green", "purple"]
     numb_omega = 100  # Increased for smoother curves
-    omegas = numpy.linspace(2.0 * numpy.pi, numpy.pi * 10000, num=numb_omega)
+    omegas = numpy.linspace(2.0 * numpy.pi, numpy.pi * 8000, num=numb_omega)
 
     # Create figures for real and imaginary parts
     fig_real = matplotlib.pyplot.figure(figsize=(10, 6))
