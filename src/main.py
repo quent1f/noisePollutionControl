@@ -127,10 +127,10 @@ if __name__ == '__main__':
 
     # material = 'Melamine'               # Matériau choisi 
 
-    V_obj = 0.8
+    V_obj = 0.5 
     mu = 5
     # Alpha = 2.0 - 8.0 * 1j
-    launch_simulation(N, level, spacestep, wavenumber, V_obj, mu, chi_init=0)    
+    # launch_simulation(N, level, spacestep, wavenumber, V_obj, mu, chi_init=0)    
 
     
 
@@ -201,19 +201,36 @@ if __name__ == '__main__':
 
     """
     3) Tentative :
-    Je vais essayer de lancer K fois l'algo avec un départ différent pour éviter de stuck dans un minimum local et voir ce que ca donne
+    Je vais essayer de lancer K fois l'algo avec un départ $chi_0$ différent pour éviter de me bloquer dans un minimum local et voir ce que ca donne
     """
 
-    """
+    
     liste_energies_initiales = []
     liste_energies_finales = []
-    for _ in range(15):
+    for _ in range(50):
         energies = launch_simulation(N,level,spacestep,wavenumber,V_obj, mu, chi_init=1) 
         liste_energies_finales.append(energies[-1])
         liste_energies_initiales.append(energies[0])
 
  
-    print(liste_energies_initiales)
-    print(liste_energies_finales)
+    print("énergies de départ:", liste_energies_initiales)
+    print("énergies finales:", liste_energies_finales)
+    print("max énergies départ:", max(liste_energies_initiales))
+    print("min énergies départ:", min(liste_energies_initiales))
+    print("max énergies finale:", max(liste_energies_finales))
+    print("min énergies finale:", min(liste_energies_finales))
+
+    print("moyenne énergies départ:", numpy.mean(liste_energies_initiales))
+    print("moyenne énergies finales:", numpy.mean(liste_energies_finales))
+    print("écart-type énergies départ:", numpy.std(liste_energies_initiales))
+    print("écart-type énergies finales:", numpy.std(liste_energies_finales))
+
 
     """
+    4) Optimize the energy at once for several different frequencies 
+    
+    To do this we use the code in minimization_algo.py with optimization_procedure_2. It computes the sum of the energies for a given frequency band. 
+    """
+
+
+

@@ -116,7 +116,7 @@ def sorting_method(domain, chi, V_obj, S):
     return chi_proj
 
 
-# Attention :  j'ai enlevé omega (la fréquence) dans les paramètres (pour le moment je ne vois pas en quoi cela influe sur notre methode d'optimisation)
+# Attention :  j'ai enlevé omega (la fréquence) dans les paramètres (car on peut le retrouver avec le wavenumber)
 def optimization_procedure(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
                            Alpha, mu, chi, V_obj, wavenumber, S):
@@ -207,3 +207,76 @@ def compute_objective_function(domain_omega, u, spacestep):
     u_line = numpy.reshape(u_masked, -1)
     energy = numpy.sum(numpy.absolute(u_line)**2) * (spacestep**2)
     return energy
+
+
+
+def optimization_procedure_2(domain_omega, spacestep, f, f_dir, f_neu, f_rob,
+                           beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
+                           Alpha, mu, chi, V_obj, wavenumber, S):
+    """This function return the optimized density.
+
+    Parameter:
+        cf solvehelmholtz's remarks
+        Alpha: complex, it corresponds to the absorbtion coefficient;
+        mu: float, it is the initial step of the gradient's descent;
+        V_obj: float, it characterizes the volume constraint on the density chi.
+
+        /!\ wavenumber est une liste de nombre d'ondes (correspondant à une plage de fréquences)
+    """
+
+    k = 0
+    (M, N) = numpy.shape(domain_omega)
+    numb_iter = 100
+    energy = []
+    while k < numb_iter and mu > EPSILON0:
+        print('---- iteration number = ', k)
+        ###### On update les conditions aux bord de Robin (puisque l'on a changé chi)
+        alpha_rob = Alpha * chi
+        u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+                        beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+        ###### On souhaite résoudre le problème adjoint. On ajoute donc un terme source et on met la condition de dirichlet à 0 
+        f_adj = -2 * u.conj()
+        f_adj_dir = numpy.zeros((M, N), dtype=numpy.complex128)
+        p = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f_adj, f_adj_dir, f_neu, f_rob,
+                        beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+        
+        ### Calcul energie sur la plage de fréquences
+        
+        ene = compute_objective_function(domain_omega, u, spacestep)
+        energy.append(ene)
+        print(f"{k} ème energie", ene)
+        grad = numpy.real(Alpha * u * p)
+        print(f"{k} ème norme L2 du gradient", compute_objective_function(domain_omega, grad, spacestep))
+        while ene >= energy[k] and mu > EPSILON0:
+            new_chi = chi.copy()
+            new_chi_grad = compute_gradient_descent(new_chi, grad, domain_omega, mu)
+            new_chi_grad_projected = computeProjectors.my_compute_projection(new_chi_grad, domain_omega, V_obj, computeProjectors.rectified_linear)
+            alpha_rob = Alpha * new_chi_grad_projected
+            u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+                        beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+            ene = compute_objective_function(domain_omega, u, spacestep)
+            if ene < energy[k]:
+                # The step is increased if the energy decreased
+                mu = mu * 1.1
+                chi = new_chi_grad_projected
+            else:
+                # The step is decreased if the energy increased
+                mu = mu * 0.5
+
+        k += 1
+
+        # Sortie de la boucle si la variation d'énergie est inférieure à un seuil
+        if k > 1 and abs(ene - energy[k-1]) < 10**(-3):
+            print("Fin car X_k+1 trop proche de X_k")
+            break
+
+
+    alpha_rob = Alpha * chi
+    u = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+                beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+    chi_projected = sorting_method(domain_omega, chi, V_obj, S)
+    alpha_rob = Alpha * chi_projected
+    u_projected = processing.solve_helmholtz(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
+                beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+    
+    return chi, energy, u, grad, chi_projected, u_projected
