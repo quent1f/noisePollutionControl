@@ -28,8 +28,10 @@ def computeSurface(domain_omega):
                 S += 1
     return S
 
+
 def computeVolume(chi, S):
     return numpy.sum(chi)/S
+
 
 def initialize_random_chi(M, N, x, y, V_obj):
     chi = numpy.zeros((M, N), dtype=numpy.float64)
@@ -111,9 +113,9 @@ def launch_simulation(N: int, level: int, spacestep: float, wavenumber: float, V
 
 if __name__ == '__main__':
     # -- set parameters of the geometry
-    N = 100  # number of point2 along x-axis
+    N = 200  # number of point2 along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 2 # level of the fractal
+    level = 3 # level of the fractal
     spacestep = 1.0 / N  # mesh size
 
 
@@ -127,10 +129,10 @@ if __name__ == '__main__':
 
     # material = 'Melamine'               # Matériau choisi 
 
-    V_obj = 0.5 
+    V_obj = 0.95
     mu = 5
     # Alpha = 2.0 - 8.0 * 1j
-    # launch_simulation(N, level, spacestep, wavenumber, V_obj, mu, chi_init=0)    
+    launch_simulation(N, level, spacestep, wavenumber, V_obj, mu, chi_init=1)    
 
     
 
@@ -139,7 +141,7 @@ if __name__ == '__main__':
     """
 
     """
-    V_obj_list = [0.02*i for i in range(1,100)]
+    V_obj_list = [0.02*i for i in range(1,50)]
     liste_energies_initiales = []
     liste_energies_finales = []
     for V_obj in V_obj_list:
@@ -147,7 +149,7 @@ if __name__ == '__main__':
         liste_energies_finales.append(energies[-1])
         liste_energies_initiales.append(energies[0])
 
-    matplotlib.pyplot.figure(figsize=(8, 5))
+    matplotlib.pyplot.figure(figsize=(10, 5))
     matplotlib.pyplot.plot(V_obj_list[:len(liste_energies_finales)], liste_energies_finales, marker='o', color='b', linestyle='-', linewidth=2, markersize=3)
     # matplotlib.pyplot.plot(V_obj_list[:len(liste_energies_finales)], liste_energies_initiales, marker='x', color='r', linestyle='-', linewidth=2, markersize=3)
 
@@ -160,18 +162,17 @@ if __name__ == '__main__':
 
     # Afficher le graphique
     matplotlib.pyplot.savefig("energie_min_selon_densité", dpi = 500)
-
-
     """
+
+
 
 
     """
     2) Tracer l'énergie POST optimisation en fonction de la fréquence de l'onde 
     """
 
-    
     """
-    freq_list = numpy.linspace(100, 1000, 100)
+    freq_list = numpy.linspace(50, 4000, 200)
     omega_list = freq_list*2*numpy.pi
     wavenumber_list = omega_list/CELERITY
 
@@ -183,16 +184,16 @@ if __name__ == '__main__':
         liste_energies_initiales.append(energies[0])
 
 
-    matplotlib.pyplot.figure(figsize=(8, 5))
+    matplotlib.pyplot.figure(figsize=(11, 5))
     matplotlib.pyplot.plot(freq_list[:len(liste_energies_finales)], liste_energies_finales, marker='o', color='b', linestyle='-', linewidth=2, markersize=3)
     # matplotlib.pyplot.plot(freq_list[:len(liste_energies_finales)], liste_energies_initiales, marker='x', color='r', linestyle='-', linewidth=2, markersize=3)
 
     matplotlib.pyplot.xlabel("Fréquence de l'onde planaire en entrée", fontsize=12)
     matplotlib.pyplot.ylabel("Énergie minimale (après opti)", fontsize=12)
-    matplotlib.pyplot.title("Évolution de l'énergie après optimisation en fonction de la fréquence en entrée" , fontsize=14)
+    matplotlib.pyplot.title("Évolution de l'énergie après optimisation en fonction de la fréquence. beta = 0.5, N=100, level = 2" , fontsize=14)
 
     matplotlib.pyplot.grid(True, linestyle='--', alpha=0.7)
-    matplotlib.pyplot.xlim(0, 1000)
+    matplotlib.pyplot.xlim(0, 4000)
 
     # Afficher le graphique
     matplotlib.pyplot.savefig("energie_min_selon_frequence", dpi = 500)
@@ -204,7 +205,7 @@ if __name__ == '__main__':
     Je vais essayer de lancer K fois l'algo avec un départ $chi_0$ différent pour éviter de me bloquer dans un minimum local et voir ce que ca donne
     """
 
-    
+    """
     liste_energies_initiales = []
     liste_energies_finales = []
     for _ in range(50):
@@ -225,6 +226,7 @@ if __name__ == '__main__':
     print("écart-type énergies départ:", numpy.std(liste_energies_initiales))
     print("écart-type énergies finales:", numpy.std(liste_energies_finales))
 
+    """
 
     """
     4) Optimize the energy at once for several different frequencies 
